@@ -2,7 +2,7 @@ export function findAncestor({
   start,
   selector,
 }: {
-  start: HTMLElement;
+  start: HTMLElement | null;
   selector: string;
 }) {
   let currentElement: HTMLElement | null = start;
