@@ -35,7 +35,9 @@ export function Card({
 
   return (
     <div
-      className={`card absolute border container ${isSelected && "ring-8"}`}
+      className={`card absolute border container ${
+        isSelected && "ring-8"
+      } rounded-lg py-1 px-2`}
       style={{
         width: size.width,
         height: size.height,
