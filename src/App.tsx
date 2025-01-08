@@ -4,66 +4,20 @@ import SelectSquare from "./select-suqare";
 import { Card } from "./card";
 import ColorBtn from "./color-btn";
 import { ColorResult } from "react-color";
-import { Square } from "./square";
+import useCardMap from "./model/use-card-map";
 
 export interface Position {
   x: number;
   y: number;
 }
 
-function useCardMap() {
-  const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
-
-  function addNewCard() {
-    setCardMap((prev) => {
-      const id = Object.keys(cardMap).length + 1;
-      const newSquare = new Square({ id });
-      const newCardMap = { ...prev };
-      newCardMap[id] = newSquare;
-      return newCardMap;
-    });
-  }
-
-  function updateColor(colorMap: { [key: number]: string }) {
-    setCardMap((prev) => {
-      const newCardMap = { ...prev };
-      Object.keys(colorMap).forEach((key) => {
-        const cardId = parseInt(key, 10);
-        newCardMap[cardId].color = colorMap[cardId];
-      });
-      return newCardMap;
-    });
-  }
-
-  function updatePosition({
-    selection,
-    oldPositionMap,
-    mouseStartPosition,
-    mousePosition,
-  }: {
-    selection: number[];
-    oldPositionMap: { [key: number]: Position };
-    mouseStartPosition: Position;
-    mousePosition: Position;
-  }) {
-    setCardMap((prev) => {
-      const newCardMap = { ...prev };
-      selection.forEach((cardId) => {
-        if (!oldPositionMap[cardId]) return;
-        newCardMap[cardId].position.x =
-          oldPositionMap[cardId].x + mousePosition.x - mouseStartPosition.x;
-        newCardMap[cardId].position.y =
-          oldPositionMap[cardId].y + mousePosition.y - mouseStartPosition.y;
-      });
-      return newCardMap;
-    });
-  }
-
-  return { cardMap, addNewCard, updateColor, updatePosition };
-}
-
 function App() {
-  const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
+  const {
+    cardMap,
+    addNewCard,
+    updateColor: updateCardColor,
+    updatePosition: updateCardPosition,
+  } = useCardMap();
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectSquare, setSelectSquare] = useState<{
@@ -72,18 +26,12 @@ function App() {
   }>({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   const [selection, setSelection] = useState<number[]>([]);
   const [mousePosition, setMousePosition] = useState<Position>({ x: 0, y: 0 });
-  const [oldPositionMap, setOldPositionMap] = useState<{
-    [key: number]: { x: number; y: number };
+  const [startPositionMap, setStartPositionMap] = useState<{
+    [key: number]: Position;
   }>({});
 
-  function cardAddHandler() {
-    setCardMap((prev) => {
-      const id = Object.keys(cardMap).length + 1;
-      const newSquare = new Square({ id });
-      const newCardMap = { ...prev };
-      newCardMap[id] = newSquare;
-      return newCardMap;
-    });
+  function handleCardAdd() {
+    addNewCard();
   }
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -98,8 +46,9 @@ function App() {
 
     if (cardId) {
       // when user select card
-      if (selection.length === 0 || !selection.includes(cardId))
+      if (selection.length === 0 || !selection.includes(cardId)) {
         setSelection([cardId]);
+      }
       setIsMovingCard(true);
     } else if (!cardId) {
       // when user select background
@@ -110,8 +59,8 @@ function App() {
 
   function handleMouseMove(e: React.MouseEvent) {
     if (isMovingCard) {
-      if (Object.keys(oldPositionMap).length === 0) {
-        setOldPositionMap(() => {
+      if (Object.keys(startPositionMap).length === 0) {
+        setStartPositionMap(() => {
           const starPositionMap: { [key: number]: Position } = {};
           selection.forEach((cardId) => {
             starPositionMap[cardId] = { ...cardMap[cardId].position };
@@ -120,16 +69,11 @@ function App() {
         });
       }
 
-      setCardMap((prev) => {
-        const newCardMap = { ...prev };
-        selection.forEach((cardId) => {
-          if (!oldPositionMap[cardId]) return;
-          newCardMap[cardId].position.x =
-            oldPositionMap[cardId].x + e.pageX - mousePosition.x;
-          newCardMap[cardId].position.y =
-            oldPositionMap[cardId].y + e.pageY - mousePosition.y;
-        });
-        return newCardMap;
+      updateCardPosition({
+        selection,
+        oldPositionMap: startPositionMap,
+        mouseStartPosition: mousePosition,
+        mousePosition: { x: e.pageX, y: e.pageY },
       });
     }
 
@@ -167,19 +111,18 @@ function App() {
   function handleMouseUp() {
     setIsMovingCard(false);
     setIsSelecting(false);
-    setOldPositionMap({});
+    setStartPositionMap({});
     setMousePosition({ x: 0, y: 0 });
     setSelectSquare({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   }
 
   function handleColorChange(color: ColorResult) {
-    setCardMap((prev) => {
-      const newCardMap = { ...prev };
-      selection.forEach((cardId) => {
-        newCardMap[cardId].color = color.hex;
-      });
-      return newCardMap;
-    });
+    updateCardColor(
+      selection.reduce<{ [key: number]: string }>((result, cardId) => {
+        result[cardId] = color.hex;
+        return result;
+      }, {})
+    );
   }
 
   return (
@@ -188,7 +131,7 @@ function App() {
         <h1 className="text-3xl bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-pink-400 font-bold">
           Window.js
         </h1>
-        <button onClick={cardAddHandler}>Add card</button>
+        <button onClick={handleCardAdd}>Add card</button>
         <ColorBtn
           isSelectedItems={selection.length > 0}
           handleColorChange={handleColorChange}

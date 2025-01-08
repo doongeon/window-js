@@ -1,4 +1,4 @@
-import { Position } from "./App";
+import { Position } from "../App";
 
 export class Square {
   public id: number;
