@@ -20,7 +20,6 @@ function App() {
   } = useCardMap();
   const [mouseType, setMouseType] = useState<MouseType>("hand");
   const [isMovingCard, setIsMovingCard] = useState(false);
-  const [isSelecting, setIsSelecting] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
   const [pageOffset, setPageOffset] = useState<Position>({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
@@ -102,10 +101,17 @@ function App() {
       setSelection([]);
     }
 
+    // when mouse mode is select mode.
+    // write procedure code
+    // depend on what user press mouse on
     if (mouseType === "select") {
+      if (cardId) {
+        setSelection([cardId]);
+      }
+
       if (!cardId) {
         // when user select background
-        setIsSelecting(true);
+        setIsDragBg(true);
         setSelection([]);
         return;
       }
@@ -156,7 +162,7 @@ function App() {
     }
 
     if (mouseType === "select") {
-      if (isSelecting) {
+      if (isDragBg) {
         setSelectSquare({
           start: mouseStartPosition,
           end: {
@@ -216,7 +222,6 @@ function App() {
     }
     setIsResizing(false);
     setIsMovingCard(false);
-    setIsSelecting(false);
     setIsDragBg(false);
     setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
