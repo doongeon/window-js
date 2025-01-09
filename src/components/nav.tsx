@@ -5,11 +5,13 @@ export default function Nav({
   handleCardAdd,
   handleDeleteCard,
   handleColorChange,
+  convertToSelect,
   isCardSelected,
 }: {
   handleCardAdd: () => void;
   handleDeleteCard: () => void;
   handleColorChange: (color: ColorResult) => void;
+  convertToSelect: () => void;
   isCardSelected: boolean;
 }) {
   return (
@@ -21,6 +23,13 @@ export default function Nav({
         onClick={handleDeleteCard}
       >
         Delete
+      </button>
+      <button
+        onClick={() => {
+          convertToSelect();
+        }}
+      >
+        Select
       </button>
       <ColorBtn
         isCardSelected={isCardSelected}

@@ -7,6 +7,8 @@ import useCardMap from "./model/use-card-map";
 import { LB, LT, RB, RT, Position } from "./types";
 import Nav from "./components/nav";
 
+type MouseType = "select" | "hand";
+
 function App() {
   const {
     cardMap,
@@ -16,6 +18,7 @@ function App() {
     updatePosition: updateCardPosition,
     resize,
   } = useCardMap();
+  const [mouseType, setMouseType] = useState<MouseType>("hand");
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
@@ -42,6 +45,11 @@ function App() {
     deleteCard(selection);
   }
 
+  function convertToSelect() {
+    setSelection([]);
+    setMouseType("select");
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
     const cardElement = findAncestor({
@@ -53,36 +61,45 @@ function App() {
 
     setMouseStartPosition({ x: e.pageX, y: e.pageY });
 
-    if (target.tagName === "BUTTON") {
-      if (target.matches(".card-lt")) {
-        setResizeType("lt");
+    if (mouseType === "hand") {
+      if (target.tagName === "BUTTON") {
+        if (target.matches(".card-lt")) {
+          setResizeType("lt");
+        }
+        if (target.matches(".card-rt")) {
+          setResizeType("rt");
+        }
+        if (target.matches(".card-lb")) {
+          setResizeType("lb");
+        }
+        if (target.matches(".card-rb")) {
+          setResizeType("rb");
+        }
+        setIsResizing(true);
+        return;
       }
-      if (target.matches(".card-rt")) {
-        setResizeType("rt");
-      }
-      if (target.matches(".card-lb")) {
-        setResizeType("lb");
-      }
-      if (target.matches(".card-rb")) {
-        setResizeType("rb");
-      }
-      setIsResizing(true);
-      return;
-    }
 
-    if (cardId) {
-      // when user select card
-      if (selection.length === 0 || !selection.includes(cardId)) {
-        setSelection([cardId]);
+      if (cardId) {
+        // when user select card
+        if (selection.length === 0 || !selection.includes(cardId)) {
+          setSelection([cardId]);
+        }
+        setIsMovingCard(true);
+        return;
       }
-      setIsMovingCard(true);
-    }
 
-    if (!cardId) {
-      // when user select background
-      setIsSelecting(true);
+      // when click background
+      // make selection empty
       setSelection([]);
-      return;
+    }
+
+    if (mouseType === "select") {
+      if (!cardId) {
+        // when user select background
+        setIsSelecting(true);
+        setSelection([]);
+        return;
+      }
     }
   }
 
@@ -155,6 +172,7 @@ function App() {
     setIsMovingCard(false);
     setIsSelecting(false);
     setStartPositionMap({});
+    setMouseType("hand");
     setMouseStartPosition({ x: 0, y: 0 });
     setSelectSquare({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   }
@@ -174,6 +192,7 @@ function App() {
         handleCardAdd={handleCardAdd}
         handleDeleteCard={handleDeleteCard}
         handleColorChange={handleColorChange}
+        convertToSelect={convertToSelect}
         isCardSelected={selection.length > 0}
       />
       <div
