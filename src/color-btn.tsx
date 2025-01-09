@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { ColorResult, TwitterPicker } from "react-color";
 
 export default function ColorBtn({
-  isSelectedItems,
+  isCardSelected,
   handleColorChange,
 }: {
-  isSelectedItems: boolean;
+  isCardSelected: boolean;
   handleColorChange: (color: ColorResult) => void;
 }) {
   const [isActive, setIsActive] = useState(false);
@@ -15,13 +15,13 @@ export default function ColorBtn({
   }
 
   useEffect(() => {
-    if (!isSelectedItems) setIsActive(false);
-  }, [isSelectedItems]);
+    if (!isCardSelected) setIsActive(false);
+  }, [isCardSelected]);
 
   return (
     <div className="relative">
       <button
-        className={`${isSelectedItems ? "opacity-100" : "opacity-40"}`}
+        className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
         onClick={handleClick}
       >
         Set color

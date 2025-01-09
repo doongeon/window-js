@@ -2,24 +2,16 @@ import { useState } from "react";
 import { findAncestor } from "./utils";
 import SelectSquare from "./select-suqare";
 import { Card } from "./card";
-import ColorBtn from "./color-btn";
 import { ColorResult } from "react-color";
 import useCardMap from "./model/use-card-map";
-
-export type RT = "rt";
-export type LT = "lt";
-export type LB = "lb";
-export type RB = "rb";
-
-export interface Position {
-  x: number;
-  y: number;
-}
+import { LB, LT, RB, RT, Position } from "./types";
+import Nav from "./components/nav";
 
 function App() {
   const {
     cardMap,
     addNewCard,
+    deleteCard,
     updateColor: updateCardColor,
     updatePosition: updateCardPosition,
     resize,
@@ -43,6 +35,11 @@ function App() {
 
   function handleCardAdd() {
     addNewCard();
+  }
+
+  function handleDeleteCard() {
+    setSelection([]);
+    deleteCard(selection);
   }
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -93,11 +90,11 @@ function App() {
     if (isMovingCard) {
       if (Object.keys(startPositionMap).length === 0) {
         setStartPositionMap(() => {
-          const starPositionMap: { [key: number]: Position } = {};
+          const newStartPositionMap: { [key: number]: Position } = {};
           selection.forEach((cardId) => {
-            starPositionMap[cardId] = { ...cardMap[cardId].position };
+            newStartPositionMap[cardId] = { ...cardMap[cardId].position };
           });
-          return starPositionMap;
+          return newStartPositionMap;
         });
       }
 
@@ -173,14 +170,12 @@ function App() {
 
   return (
     <>
-      <nav className="py-2 px-4 fixed top-0 left-0 z-10 w-full flex items-end justify-start gap-4 text-white border-b bg-gradient-to-r from-cyan-400 to-pink-400 border-transparent">
-        <h1 className="text-3xl bg-clip-text font-bold">Window.js</h1>
-        <button onClick={handleCardAdd}>Add card</button>
-        <ColorBtn
-          isSelectedItems={selection.length > 0}
-          handleColorChange={handleColorChange}
-        />
-      </nav>
+      <Nav
+        handleCardAdd={handleCardAdd}
+        handleDeleteCard={handleDeleteCard}
+        handleColorChange={handleColorChange}
+        isCardSelected={selection.length > 0}
+      />
       <div
         className="cards relative w-full h-[100vh] bg-slate-800 text-white"
         onMouseDown={handleMouseDown}

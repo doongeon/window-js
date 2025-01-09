@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Position } from "./App";
+import { Position } from "./types";
 
 export interface CardProps {
   id: number;

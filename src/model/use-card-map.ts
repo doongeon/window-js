@@ -1,16 +1,31 @@
 import { useState } from "react";
 import { Square } from "../types/square";
-import { LB, LT, RB, RT, Position } from "../App";
+import { LB, LT, Position, RB, RT } from "../types";
 
 export default function useCardMap() {
   const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
+  const [id, setId] = useState(0);
 
   function addNewCard() {
+    setId((prev) => {
+      const newId = prev + 1;
+      setCardMap((prev) => {
+        const newSquare = new Square({ id: newId });
+        const newCardMap = { ...prev };
+        newCardMap[newId] = newSquare;
+        return newCardMap;
+      });
+      return newId;
+    });
+  }
+
+  function deleteCard(cardIds: number[]) {
+    if (cardIds.length < 1) return;
     setCardMap((prev) => {
-      const id = Object.keys(cardMap).length + 1;
-      const newSquare = new Square({ id });
       const newCardMap = { ...prev };
-      newCardMap[id] = newSquare;
+      cardIds.forEach((cardId) => {
+        delete newCardMap[cardId];
+      });
       return newCardMap;
     });
   }
@@ -80,5 +95,12 @@ export default function useCardMap() {
     });
   }
 
-  return { cardMap, addNewCard, updateColor, updatePosition, resize };
+  return {
+    cardMap,
+    addNewCard,
+    deleteCard,
+    updateColor,
+    updatePosition,
+    resize,
+  };
 }
