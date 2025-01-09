@@ -6,6 +6,11 @@ import ColorBtn from "./color-btn";
 import { ColorResult } from "react-color";
 import useCardMap from "./model/use-card-map";
 
+export type RT = "rt";
+export type LT = "lt";
+export type LB = "lb";
+export type RB = "rb";
+
 export interface Position {
   x: number;
   y: number;
@@ -17,15 +22,21 @@ function App() {
     addNewCard,
     updateColor: updateCardColor,
     updatePosition: updateCardPosition,
+    resize,
   } = useCardMap();
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeType, setResizeType] = useState<LT | RT | LB | RB | undefined>();
   const [selectSquare, setSelectSquare] = useState<{
     start: Position;
     end: Position;
   }>({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   const [selection, setSelection] = useState<number[]>([]);
-  const [mousePosition, setMousePosition] = useState<Position>({ x: 0, y: 0 });
+  const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
+    x: 0,
+    y: 0,
+  });
   const [startPositionMap, setStartPositionMap] = useState<{
     [key: number]: Position;
   }>({});
@@ -35,6 +46,7 @@ function App() {
   }
 
   function handleMouseDown(e: React.MouseEvent) {
+    const target = e.target as HTMLElement;
     const cardElement = findAncestor({
       start: e.target as HTMLElement,
       selector: ".card",
@@ -42,7 +54,24 @@ function App() {
     const cardId =
       cardElement?.dataset.cardId && parseInt(cardElement.dataset.cardId, 10);
 
-    setMousePosition({ x: e.pageX, y: e.pageY });
+    setMouseStartPosition({ x: e.pageX, y: e.pageY });
+
+    if (target.tagName === "BUTTON") {
+      if (target.matches(".card-lt")) {
+        setResizeType("lt");
+      }
+      if (target.matches(".card-rt")) {
+        setResizeType("rt");
+      }
+      if (target.matches(".card-lb")) {
+        setResizeType("lb");
+      }
+      if (target.matches(".card-rb")) {
+        setResizeType("rb");
+      }
+      setIsResizing(true);
+      return;
+    }
 
     if (cardId) {
       // when user select card
@@ -50,10 +79,13 @@ function App() {
         setSelection([cardId]);
       }
       setIsMovingCard(true);
-    } else if (!cardId) {
+    }
+
+    if (!cardId) {
       // when user select background
       setIsSelecting(true);
       setSelection([]);
+      return;
     }
   }
 
@@ -72,14 +104,25 @@ function App() {
       updateCardPosition({
         selection,
         startPositionMap,
-        mouseStartPosition: mousePosition,
+        mouseStartPosition: mouseStartPosition,
         mousePosition: { x: e.pageX, y: e.pageY },
       });
+
+      return;
+    }
+
+    if (isResizing) {
+      resize({
+        cardId: selection[0],
+        type: resizeType,
+        position: { x: e.pageX, y: e.pageY },
+      });
+      return;
     }
 
     if (isSelecting) {
       setSelectSquare({
-        start: mousePosition,
+        start: mouseStartPosition,
         end: {
           x: e.pageX,
           y: e.pageY,
@@ -87,12 +130,12 @@ function App() {
       });
 
       const p1 = {
-        x: Math.min(mousePosition.x, e.pageX),
-        y: Math.min(mousePosition.y, e.pageY),
+        x: Math.min(mouseStartPosition.x, e.pageX),
+        y: Math.min(mouseStartPosition.y, e.pageY),
       };
       const p2 = {
-        x: Math.max(mousePosition.x, e.pageX),
-        y: Math.max(mousePosition.y, e.pageY),
+        x: Math.max(mouseStartPosition.x, e.pageX),
+        y: Math.max(mouseStartPosition.y, e.pageY),
       };
       const selectedId = Object.keys(cardMap).reduce<number[]>(
         (result, key) => {
@@ -106,13 +149,16 @@ function App() {
       );
       setSelection(selectedId);
     }
+
+    return;
   }
 
   function handleMouseUp() {
+    setIsResizing(false);
     setIsMovingCard(false);
     setIsSelecting(false);
     setStartPositionMap({});
-    setMousePosition({ x: 0, y: 0 });
+    setMouseStartPosition({ x: 0, y: 0 });
     setSelectSquare({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   }
 
@@ -148,6 +194,9 @@ function App() {
             position={card.position}
             size={card.size}
             isSelected={selection.includes(card.id)}
+            isSelectedOnly={
+              selection.length === 1 && selection.includes(card.id)
+            }
             color={card.color}
           />
         ))}

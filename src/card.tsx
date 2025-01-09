@@ -6,6 +6,7 @@ export interface CardProps {
   position: Position;
   size: { width: number; height: number };
   isSelected: boolean;
+  isSelectedOnly: boolean;
   color: string;
 }
 
@@ -14,6 +15,7 @@ export function Card({
   position,
   size,
   isSelected,
+  isSelectedOnly,
   color,
 }: CardProps) {
   const [isTyping, setIsTyping] = useState(false);
@@ -59,6 +61,12 @@ export function Card({
       ) : (
         <p className="w-full h-full">{text}</p>
       )}
+      <div className={`${isSelectedOnly ? "" : "hidden"}`}>
+        <button className="card-lt w-2 h-2 bg-slate-50 absolute left-[-4px] top-[-4px]"></button>
+        <button className="card-rt w-2 h-2 bg-slate-50 absolute right-[-4px] top-[-4px]"></button>
+        <button className="card-lb w-2 h-2 bg-slate-50 absolute left-[-4px] bot-[4px]"></button>
+        <button className="card-rb w-2 h-2 bg-slate-50 absolute right-[-4px] bot-[4px]"></button>
+      </div>
     </div>
   );
 }

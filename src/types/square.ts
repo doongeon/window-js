@@ -27,6 +27,43 @@ export class Square {
     this.color = color;
   }
 
+  setLT({ x, y }: Position) {
+    if (x > this.position.x + this.size.width) return;
+    if (y > this.position.y + this.size.height) return;
+
+    this.size.width = this.position.x + this.size.width - x;
+    this.size.height = this.position.y + this.size.height - y;
+    this.position = { x, y };
+  }
+
+  setRT({ x, y }: Position) {
+    if (x < this.position.x) return;
+    if (y > this.position.y + this.size.height) return;
+
+    this.size.width = x - this.position.x;
+    this.size.height = this.position.y + this.size.height - y;
+
+    this.position = { x: this.position.x, y };
+  }
+
+  setLB({ x, y }: Position) {
+    if (x > this.position.x + this.size.width) return;
+    if (y < this.position.y) return;
+
+    this.size.width = this.position.x + this.size.width - x;
+    this.size.height = y - this.position.y;
+
+    this.position = { x, y: this.position.y };
+  }
+
+  setRB({ x, y }: Position) {
+    if (x < this.position.x) return;
+    if (y < this.position.y) return;
+
+    this.size.width = x - this.position.x;
+    this.size.height = y - this.position.y;
+  }
+
   getCenter(): Position {
     return {
       x: this.position.x + this.size.width / 2,

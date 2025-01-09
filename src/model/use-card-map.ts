@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Square } from "../types/square";
-import { Position } from "../App";
+import { LB, LT, RB, RT, Position } from "../App";
 
 export default function useCardMap() {
   const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
@@ -22,6 +22,36 @@ export default function useCardMap() {
         const cardId = parseInt(key, 10);
         newCardMap[cardId].color = colorMap[cardId];
       });
+      return newCardMap;
+    });
+  }
+
+  function resize({
+    cardId,
+    type,
+    position,
+  }: {
+    cardId: number;
+    type?: LT | RT | LB | RB;
+    position: Position;
+  }) {
+    setCardMap((prev) => {
+      const newCardMap = { ...prev };
+      switch (type) {
+        case "lt":
+          newCardMap[cardId].setLT(position);
+          break;
+        case "rt":
+          newCardMap[cardId].setRT(position);
+          break;
+        case "lb":
+          newCardMap[cardId].setLB(position);
+          break;
+        case "rb":
+          newCardMap[cardId].setRB(position);
+          break;
+        default:
+      }
       return newCardMap;
     });
   }
@@ -50,5 +80,5 @@ export default function useCardMap() {
     });
   }
 
-  return { cardMap, addNewCard, updateColor, updatePosition };
+  return { cardMap, addNewCard, updateColor, updatePosition, resize };
 }
