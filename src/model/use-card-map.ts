@@ -4,13 +4,13 @@ import { LB, LT, Position, RB, RT } from "../types";
 
 export default function useCardMap() {
   const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
-  const [id, setId] = useState(0);
+  const [, setId] = useState(0);
 
-  function addNewCard() {
+  function addNewCard({ position }: { position: Position }) {
     setId((prev) => {
       const newId = prev + 1;
       setCardMap((prev) => {
-        const newSquare = new Square({ id: newId });
+        const newSquare = new Square({ id: newId, position });
         const newCardMap = { ...prev };
         newCardMap[newId] = newSquare;
         return newCardMap;

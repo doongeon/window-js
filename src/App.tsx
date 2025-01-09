@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { findAncestor } from "./utils";
+import { findAncestor, getAbsPosition } from "./utils";
 import SelectSquare from "./select-suqare";
 import { Card } from "./card";
 import { ColorResult } from "react-color";
 import useCardMap from "./model/use-card-map";
-import { LB, LT, RB, RT, Position } from "./types";
+import { LB, LT, RB, RT, Position, WALL_WIDTH, WALL_HEIGHT } from "./types";
 import Nav from "./components/nav";
 
 type MouseType = "select" | "hand";
@@ -22,6 +22,9 @@ function App() {
   const [isMovingCard, setIsMovingCard] = useState(false);
   const [isSelecting, setIsSelecting] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [pageOffset, setPageOffset] = useState<Position>({ x: 0, y: 0 });
+  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [isDragBg, setIsDragBg] = useState(false);
   const [resizeType, setResizeType] = useState<LT | RT | LB | RB | undefined>();
   const [selectSquare, setSelectSquare] = useState<{
     start: Position;
@@ -37,7 +40,9 @@ function App() {
   }>({});
 
   function handleCardAdd() {
-    addNewCard();
+    addNewCard({
+      position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
+    });
   }
 
   function handleDeleteCard() {
@@ -88,6 +93,10 @@ function App() {
         return;
       }
 
+      if (!cardId) {
+        setIsDragBg(true);
+      }
+
       // when click background
       // make selection empty
       setSelection([]);
@@ -104,73 +113,112 @@ function App() {
   }
 
   function handleMouseMove(e: React.MouseEvent) {
-    if (isMovingCard) {
-      if (Object.keys(startPositionMap).length === 0) {
-        setStartPositionMap(() => {
-          const newStartPositionMap: { [key: number]: Position } = {};
-          selection.forEach((cardId) => {
-            newStartPositionMap[cardId] = { ...cardMap[cardId].position };
+    if (mouseType === "hand") {
+      if (isMovingCard) {
+        if (Object.keys(startPositionMap).length === 0) {
+          setStartPositionMap(() => {
+            const newStartPositionMap: { [key: number]: Position } = {};
+            selection.forEach((cardId) => {
+              newStartPositionMap[cardId] = { ...cardMap[cardId].position };
+            });
+            return newStartPositionMap;
           });
-          return newStartPositionMap;
+        }
+
+        updateCardPosition({
+          selection,
+          startPositionMap,
+          mouseStartPosition: mouseStartPosition,
+          mousePosition: { x: e.pageX, y: e.pageY },
         });
+
+        return;
       }
 
-      updateCardPosition({
-        selection,
-        startPositionMap,
-        mouseStartPosition: mouseStartPosition,
-        mousePosition: { x: e.pageX, y: e.pageY },
-      });
+      if (isDragBg) {
+        const dx = e.pageX - mouseStartPosition.x;
+        const dy = e.pageY - mouseStartPosition.y;
+        setDragOffset({ x: dx, y: dy });
+      }
 
-      return;
+      if (isResizing) {
+        resize({
+          cardId: selection[0],
+          type: resizeType,
+          position: getAbsPosition({
+            pageX: e.pageX,
+            pageY: e.pageY,
+            pageOffset,
+          }),
+        });
+        return;
+      }
     }
 
-    if (isResizing) {
-      resize({
-        cardId: selection[0],
-        type: resizeType,
-        position: { x: e.pageX, y: e.pageY },
-      });
-      return;
-    }
+    if (mouseType === "select") {
+      if (isSelecting) {
+        setSelectSquare({
+          start: mouseStartPosition,
+          end: {
+            x: e.pageX,
+            y: e.pageY,
+          },
+        });
 
-    if (isSelecting) {
-      setSelectSquare({
-        start: mouseStartPosition,
-        end: {
-          x: e.pageX,
-          y: e.pageY,
-        },
-      });
+        const mouseStart = getAbsPosition({
+          pageX: mouseStartPosition.x,
+          pageY: mouseStartPosition.y,
+          pageOffset,
+        });
 
-      const p1 = {
-        x: Math.min(mouseStartPosition.x, e.pageX),
-        y: Math.min(mouseStartPosition.y, e.pageY),
-      };
-      const p2 = {
-        x: Math.max(mouseStartPosition.x, e.pageX),
-        y: Math.max(mouseStartPosition.y, e.pageY),
-      };
-      const selectedId = Object.keys(cardMap).reduce<number[]>(
-        (result, key) => {
-          const cardId = parseInt(key, 10);
-          if (cardMap[cardId].checkCenterIsIn({ p1, p2 })) {
-            result.push(cardId);
-          }
-          return result;
-        },
-        []
-      );
-      setSelection(selectedId);
+        const mouseEnd = getAbsPosition({
+          pageX: e.pageX,
+          pageY: e.pageY,
+          pageOffset,
+        });
+
+        const p1 = {
+          x: Math.min(mouseStart.x, mouseEnd.x),
+          y: Math.min(mouseStart.y, mouseEnd.y),
+        };
+        const p2 = {
+          x: Math.max(mouseStart.x, mouseEnd.x),
+          y: Math.max(mouseStart.y, mouseEnd.y),
+        };
+
+        const selectedId = Object.keys(cardMap).reduce<number[]>(
+          (result, key) => {
+            const cardId = parseInt(key, 10);
+            if (cardMap[cardId].checkCenterIsIn({ p1, p2 })) {
+              result.push(cardId);
+            }
+            return result;
+          },
+          []
+        );
+        setSelection(selectedId);
+      }
     }
 
     return;
   }
 
   function handleMouseUp() {
+    if (mouseType === "hand") {
+      if (isDragBg) {
+        setPageOffset((prev) => {
+          const newPageOffset = { ...prev };
+          newPageOffset.x += dragOffset.x;
+          newPageOffset.y += dragOffset.y;
+          return newPageOffset;
+        });
+      }
+    }
     setIsResizing(false);
     setIsMovingCard(false);
     setIsSelecting(false);
+    setIsDragBg(false);
+    setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
     setMouseType("hand");
     setMouseStartPosition({ x: 0, y: 0 });
@@ -196,10 +244,19 @@ function App() {
         isCardSelected={selection.length > 0}
       />
       <div
-        className="cards relative w-full h-[100vh] bg-slate-800 text-white"
+        className={`cards relative bg-slate-800 text-white`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        style={{
+          transform: `translate(${pageOffset.x + dragOffset.x}px, ${
+            pageOffset.y + dragOffset.y
+          }px)`,
+          width: WALL_WIDTH + "px",
+          height: WALL_HEIGHT + "px",
+          left: -WALL_WIDTH / 2,
+          top: -WALL_HEIGHT / 2,
+        }}
       >
         {Object.values(cardMap).map((card) => (
           <Card
@@ -214,7 +271,11 @@ function App() {
             color={card.color}
           />
         ))}
-        <SelectSquare start={selectSquare.start} end={selectSquare.end} />
+        <SelectSquare
+          start={selectSquare.start}
+          end={selectSquare.end}
+          pageOffset={pageOffset}
+        />
       </div>
     </>
   );

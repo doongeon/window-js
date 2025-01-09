@@ -9,13 +9,13 @@ export class Square {
 
   constructor({
     id,
-    position = { x: 100, y: 100 },
+    position,
     size = { width: 100, height: 40 },
     isSelected = false,
     color = "transparent",
   }: {
     id: number;
-    position?: Position;
+    position: Position;
     size?: { width: number; height: number };
     isSelected?: boolean;
     color?: string;
