@@ -71,7 +71,7 @@ function App() {
 
       updateCardPosition({
         selection,
-        oldPositionMap: startPositionMap,
+        startPositionMap,
         mouseStartPosition: mousePosition,
         mousePosition: { x: e.pageX, y: e.pageY },
       });
@@ -127,10 +127,8 @@ function App() {
 
   return (
     <>
-      <nav className="py-2 px-4 fixed top-0 left-0 z-10 w-full flex items-end justify-start gap-4 text-white border-b border-black">
-        <h1 className="text-3xl bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-pink-400 font-bold">
-          Window.js
-        </h1>
+      <nav className="py-2 px-4 fixed top-0 left-0 z-10 w-full flex items-end justify-start gap-4 text-white border-b bg-gradient-to-r from-cyan-400 to-pink-400 border-transparent">
+        <h1 className="text-3xl bg-clip-text font-bold">Window.js</h1>
         <button onClick={handleCardAdd}>Add card</button>
         <ColorBtn
           isSelectedItems={selection.length > 0}

@@ -28,23 +28,23 @@ export default function useCardMap() {
 
   function updatePosition({
     selection,
-    oldPositionMap,
+    startPositionMap,
     mouseStartPosition,
     mousePosition,
   }: {
     selection: number[];
-    oldPositionMap: { [key: number]: Position };
+    startPositionMap: { [key: number]: Position };
     mouseStartPosition: Position;
     mousePosition: Position;
   }) {
     setCardMap((prev) => {
       const newCardMap = { ...prev };
       selection.forEach((cardId) => {
-        if (!oldPositionMap[cardId]) return;
+        if (!startPositionMap[cardId]) return;
         newCardMap[cardId].position.x =
-          oldPositionMap[cardId].x + mousePosition.x - mouseStartPosition.x;
+          startPositionMap[cardId].x + mousePosition.x - mouseStartPosition.x;
         newCardMap[cardId].position.y =
-          oldPositionMap[cardId].y + mousePosition.y - mouseStartPosition.y;
+          startPositionMap[cardId].y + mousePosition.y - mouseStartPosition.y;
       });
       return newCardMap;
     });

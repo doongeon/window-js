@@ -15,10 +15,10 @@ export class Square {
     color = "transparent",
   }: {
     id: number;
-    position: Position;
-    size: { width: number; height: number };
-    isSelected: boolean;
-    color: string;
+    position?: Position;
+    size?: { width: number; height: number };
+    isSelected?: boolean;
+    color?: string;
   }) {
     this.id = id;
     this.position = position;
