@@ -4,19 +4,18 @@ import { Position, ResizeBtn } from "../types";
 
 export default function useCardMap() {
   const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
-  const [, setId] = useState(0);
+  const [id, setId] = useState(0);
 
   function addNewCard({ position }: { position: Position }) {
-    setId((prev) => {
-      const newId = prev + 1;
-      setCardMap((prev) => {
-        const newSquare = new Square({ id: newId, position });
-        const newCardMap = { ...prev };
-        newCardMap[newId] = newSquare;
-        return newCardMap;
-      });
-      return newId;
+    const newId = id + 1;
+    setId(newId);
+    setCardMap((prev) => {
+      const newSquare = new Square({ id: newId, position });
+      const newCardMap = { ...prev };
+      newCardMap[newId] = newSquare;
+      return newCardMap;
     });
+    return newId;
   }
 
   function deleteCard(cardIds: number[]) {

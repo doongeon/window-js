@@ -3,11 +3,12 @@ import { Square } from "../types/square";
 
 export interface CardProps {
   card: Square;
+  zIndex: number;
   isSelected: boolean;
   isSelectedOnly: boolean;
 }
 
-export function Card({ card, isSelected, isSelectedOnly }: CardProps) {
+export function Card({ card, zIndex, isSelected, isSelectedOnly }: CardProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [text, setText] = useState(`Card #${card.id}`);
 
@@ -37,7 +38,7 @@ export function Card({ card, isSelected, isSelectedOnly }: CardProps) {
         left: card.position.x,
         top: card.position.y,
         backgroundColor: card.color,
-        zIndex: card.zIndex,
+        zIndex: zIndex,
       }}
       data-card-id={card.id}
     >

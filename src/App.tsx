@@ -25,6 +25,7 @@ function App() {
     updatePosition: updateCardPosition,
     resize,
   } = useCardMap();
+  const [zStack, setZStack] = useState<number[]>([]);
   const { selection, clearSelection, updateSelection } = useSelection();
   const [mouseType, setMouseType] = useState<MouseType>("hand");
   const [mouseTarget, setMouseTarget] = useState<MouseTarget | null>(null);
@@ -44,8 +45,14 @@ function App() {
   }>({});
 
   function handleCardAdd() {
-    addNewCard({
+    const cardId = addNewCard({
       position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
+    });
+
+    setZStack((prev) => {
+      const newZStack = [...prev];
+      newZStack.push(cardId);
+      return newZStack;
     });
   }
 
@@ -94,11 +101,19 @@ function App() {
         return;
       }
 
+      // when user select card
       if (cardId) {
-        // when user select card
         if (selection.length === 0 || !selection.includes(cardId)) {
           updateSelection({ newSelection: [cardId] });
         }
+
+        setZStack((prev) => {
+          const idx = prev.indexOf(cardId);
+          const head = prev.slice(0, idx);
+          const tail = prev.slice(idx + 1);
+          const newZStack = [...head, ...tail, prev[idx]];
+          return newZStack;
+        });
         setMouseTarget("card");
         return;
       }
@@ -232,6 +247,7 @@ function App() {
     }
 
     // 마우스 관련 값 초기화
+    console.log(zStack);
     setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
     setMouseType("hand");
@@ -277,6 +293,7 @@ function App() {
           <Card
             key={card.id}
             card={card}
+            zIndex={zStack.indexOf(card.id)}
             isSelected={selection.includes(card.id)}
             isSelectedOnly={
               selection.length === 1 && selection.includes(card.id)

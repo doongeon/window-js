@@ -24,7 +24,7 @@ export default function ColorBtn({
         className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
         onClick={handleClick}
       >
-        Set color
+        색상
       </button>
       <TwitterPicker
         className={`${isActive ? "" : "hidden"} absolute`}
