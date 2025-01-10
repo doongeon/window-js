@@ -1,5 +1,5 @@
 import { ColorResult } from "react-color";
-import ColorBtn from "../color-btn";
+import ColorBtn from "./color-btn";
 
 export default function Nav({
   handleCardAdd,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Square } from "./types/square";
+import { Square } from "../types/square";
 
 export interface CardProps {
   card: Square;

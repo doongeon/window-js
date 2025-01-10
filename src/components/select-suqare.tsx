@@ -1,4 +1,4 @@
-import { Position } from "./types";
+import { Position } from "../types";
 
 const WALL_WIDTH = 100000;
 const WALL_HEIGHT = 100000;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { findAncestor, getAbsPosition } from "./utils";
-import SelectSquare from "./select-suqare";
-import { Card } from "./card";
+import SelectSquare from "./components/select-suqare";
+import { Card } from "./components/card";
 import { ColorResult } from "react-color";
 import useCardMap from "./model/use-card-map";
 import {
