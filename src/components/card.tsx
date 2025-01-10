@@ -30,11 +30,9 @@ export function Card({ card, zIndex, isSelected }: CardProps) {
 export function CardAdjuster({ card }: { card: Square }) {
   return (
     <div
-      className={`card-adjuster ring-4`}
+      className={`card-adjuster`}
       style={{
         position: "absolute",
-        width: card.size.width,
-        height: card.size.height,
         left: card.position.x,
         top: card.position.y,
         zIndex: 9999,
@@ -43,19 +41,19 @@ export function CardAdjuster({ card }: { card: Square }) {
       <div className="resize-btns">
         <button
           className="card-lt w-2 h-2 bg-slate-50 border border-black absolute"
-          style={{ left: "-10px", top: "-10px" }}
+          style={{ left: "-8px", top: "-8px" }}
         ></button>
         <button
           className="card-rt w-2 h-2 bg-slate-50 border border-black absolute"
-          style={{ right: "-10px", top: "-10px" }}
+          style={{ left: `${card.size.width}px`, top: "-8px" }}
         ></button>
         <button
           className="card-lb w-2 h-2 bg-slate-50 border border-black absolute"
-          style={{ left: "-10px", bottom: "-10px" }}
+          style={{ left: "-8px", top: `${card.size.height}px` }}
         ></button>
         <button
           className="card-rb w-2 h-2 bg-slate-50 border border-black absolute"
-          style={{ right: "-10px", bottom: "-10px" }}
+          style={{ left: `${card.size.width}px`, top: `${card.size.height}px` }}
         ></button>
       </div>
     </div>

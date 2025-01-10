@@ -77,6 +77,7 @@ function App() {
 
   function handleMouseDown(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
+    console.log(target);
     const cardElement = findAncestor({
       start: e.target as HTMLElement,
       selector: ".card",
@@ -231,6 +232,7 @@ function App() {
   }
 
   function handleMouseUp() {
+    // console.log("mouse type: " + mouseType, " mouse target: " + mouseTarget);
     // 사용자가 드래그 한 만큼 화면 오프셋 조정
     if (mouseType === "hand") {
       if (mouseTarget === "bg") {
