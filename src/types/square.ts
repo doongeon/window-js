@@ -4,27 +4,32 @@ export class Square {
   public id: number;
   public position: Position;
   public size: { width: number; height: number };
-  public isSelected: boolean;
+  // public isSelected: boolean;
   public color: string;
+  public zIndex: number;
 
+  // 유저가 선택한 스퀘어는 selection에서 관리합니다.
   constructor({
     id,
     position,
     size = { width: 100, height: 40 },
-    isSelected = false,
     color = "transparent",
-  }: {
+    zIndex = 1,
+  }: // isSelected = false,
+  {
     id: number;
     position: Position;
     size?: { width: number; height: number };
-    isSelected?: boolean;
     color?: string;
+    zIndex?: number;
+    // isSelected?: boolean;
   }) {
     this.id = id;
     this.position = position;
     this.size = size;
-    this.isSelected = isSelected;
     this.color = color;
+    this.zIndex = zIndex;
+    // this.isSelected = isSelected;
   }
 
   setLT({ x, y }: Position) {
@@ -79,5 +84,13 @@ export class Square {
       center.y >= p1.y &&
       center.y <= p2.y
     );
+  }
+
+  upZindex() {
+    this.zIndex++;
+  }
+
+  downZindex() {
+    this.zIndex--;
   }
 }

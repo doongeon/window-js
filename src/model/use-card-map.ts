@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Square } from "../types/square";
-import { LB, LT, Position, RB, RT } from "../types";
+import { Position, ResizeBtn } from "../types";
 
 export default function useCardMap() {
   const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
@@ -47,7 +47,7 @@ export default function useCardMap() {
     position,
   }: {
     cardId: number;
-    type?: LT | RT | LB | RB;
+    type?: ResizeBtn;
     position: Position;
   }) {
     setCardMap((prev) => {

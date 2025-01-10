@@ -4,10 +4,17 @@ import SelectSquare from "./select-suqare";
 import { Card } from "./card";
 import { ColorResult } from "react-color";
 import useCardMap from "./model/use-card-map";
-import { LB, LT, RB, RT, Position, WALL_WIDTH, WALL_HEIGHT } from "./types";
+import {
+  Position,
+  WALL_WIDTH,
+  WALL_HEIGHT,
+  ResizeBtn,
+  MouseType,
+} from "./types";
 import Nav from "./components/nav";
+import useSelection from "./hooks/use-selection";
 
-type MouseType = "select" | "hand";
+type MouseTarget = "bg" | "card" | "resizeBtn";
 
 function App() {
   const {
@@ -18,18 +25,16 @@ function App() {
     updatePosition: updateCardPosition,
     resize,
   } = useCardMap();
+  const { selection, clearSelection, updateSelection } = useSelection();
   const [mouseType, setMouseType] = useState<MouseType>("hand");
-  const [isMovingCard, setIsMovingCard] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
+  const [mouseTarget, setMouseTarget] = useState<MouseTarget | null>(null);
   const [pageOffset, setPageOffset] = useState<Position>({ x: 0, y: 0 });
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
-  const [isDragBg, setIsDragBg] = useState(false);
-  const [resizeType, setResizeType] = useState<LT | RT | LB | RB | undefined>();
+  const [resizeType, setResizeType] = useState<ResizeBtn | undefined>();
   const [selectSquare, setSelectSquare] = useState<{
     start: Position;
     end: Position;
   }>({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
-  const [selection, setSelection] = useState<number[]>([]);
   const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
     x: 0,
     y: 0,
@@ -45,12 +50,12 @@ function App() {
   }
 
   function handleDeleteCard() {
-    setSelection([]);
+    clearSelection();
     deleteCard(selection);
   }
 
   function convertToSelect() {
-    setSelection([]);
+    clearSelection();
     setMouseType("select");
   }
 
@@ -65,6 +70,12 @@ function App() {
 
     setMouseStartPosition({ x: e.pageX, y: e.pageY });
 
+    //
+    // 마우스 타입에 맞는 행동을 if문 아래에 작성
+    //
+
+    // 마우스 타입이 hand일때
+    // hand는 기본 타입입니다.
     if (mouseType === "hand") {
       if (target.tagName === "BUTTON") {
         if (target.matches(".card-lt")) {
@@ -79,40 +90,39 @@ function App() {
         if (target.matches(".card-rb")) {
           setResizeType("rb");
         }
-        setIsResizing(true);
+        setMouseTarget("resizeBtn");
         return;
       }
 
       if (cardId) {
         // when user select card
         if (selection.length === 0 || !selection.includes(cardId)) {
-          setSelection([cardId]);
+          updateSelection({ newSelection: [cardId] });
         }
-        setIsMovingCard(true);
+        setMouseTarget("card");
         return;
       }
 
       if (!cardId) {
-        setIsDragBg(true);
+        setMouseTarget("bg");
       }
 
-      // when click background
-      // make selection empty
-      setSelection([]);
+      // 백그라운드를 클릭했을때는 selection을 비운다
+      clearSelection();
     }
 
-    // when mouse mode is select mode.
-    // write procedure code
-    // depend on what user press mouse on
+    // 마우스 타입이 select일때
+    // 네비게이션에서 select를 클릭하면 마우스 타입이 select입니다
+    // select 타입은 드래그 해서 여러 카드를 선택할 수 있도록 합니다.
     if (mouseType === "select") {
       if (cardId) {
-        setSelection([cardId]);
+        updateSelection({ newSelection: [cardId] });
       }
 
       if (!cardId) {
         // when user select background
-        setIsDragBg(true);
-        setSelection([]);
+        setMouseTarget("bg");
+        clearSelection();
         return;
       }
     }
@@ -120,7 +130,7 @@ function App() {
 
   function handleMouseMove(e: React.MouseEvent) {
     if (mouseType === "hand") {
-      if (isMovingCard) {
+      if (mouseTarget === "card") {
         if (Object.keys(startPositionMap).length === 0) {
           setStartPositionMap(() => {
             const newStartPositionMap: { [key: number]: Position } = {};
@@ -132,7 +142,7 @@ function App() {
         }
 
         updateCardPosition({
-          selection,
+          selection: selection,
           startPositionMap,
           mouseStartPosition: mouseStartPosition,
           mousePosition: { x: e.pageX, y: e.pageY },
@@ -141,13 +151,14 @@ function App() {
         return;
       }
 
-      if (isDragBg) {
+      if (mouseTarget === "bg") {
         const dx = e.pageX - mouseStartPosition.x;
         const dy = e.pageY - mouseStartPosition.y;
         setDragOffset({ x: dx, y: dy });
+        return;
       }
 
-      if (isResizing) {
+      if (mouseTarget === "resizeBtn") {
         resize({
           cardId: selection[0],
           type: resizeType,
@@ -162,7 +173,7 @@ function App() {
     }
 
     if (mouseType === "select") {
-      if (isDragBg) {
+      if (mouseTarget === "bg") {
         setSelectSquare({
           start: mouseStartPosition,
           end: {
@@ -192,17 +203,15 @@ function App() {
           y: Math.max(mouseStart.y, mouseEnd.y),
         };
 
-        const selectedId = Object.keys(cardMap).reduce<number[]>(
-          (result, key) => {
+        updateSelection({
+          newSelection: Object.keys(cardMap).reduce<number[]>((result, key) => {
             const cardId = parseInt(key, 10);
             if (cardMap[cardId].checkCenterIsIn({ p1, p2 })) {
               result.push(cardId);
             }
             return result;
-          },
-          []
-        );
-        setSelection(selectedId);
+          }, []),
+        });
       }
     }
 
@@ -210,8 +219,9 @@ function App() {
   }
 
   function handleMouseUp() {
+    // 사용자가 드래그 한 만큼 화면 오프셋 조정
     if (mouseType === "hand") {
-      if (isDragBg) {
+      if (mouseTarget === "bg") {
         setPageOffset((prev) => {
           const newPageOffset = { ...prev };
           newPageOffset.x += dragOffset.x;
@@ -220,12 +230,12 @@ function App() {
         });
       }
     }
-    setIsResizing(false);
-    setIsMovingCard(false);
-    setIsDragBg(false);
+
+    // 마우스 관련 값 초기화
     setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
     setMouseType("hand");
+    setMouseTarget(null);
     setMouseStartPosition({ x: 0, y: 0 });
     setSelectSquare({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   }
@@ -266,14 +276,11 @@ function App() {
         {Object.values(cardMap).map((card) => (
           <Card
             key={card.id}
-            id={card.id}
-            position={card.position}
-            size={card.size}
+            card={card}
             isSelected={selection.includes(card.id)}
             isSelectedOnly={
               selection.length === 1 && selection.includes(card.id)
             }
-            color={card.color}
           />
         ))}
         <SelectSquare

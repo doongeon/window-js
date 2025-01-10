@@ -1,7 +1,6 @@
-export type RT = "rt";
-export type LT = "lt";
-export type LB = "lb";
-export type RB = "rb";
+export type MouseType = "select" | "hand";
+
+export type ResizeBtn = "rt" | "lt" | "lb" | "rb";
 
 export const WALL_WIDTH = 100000;
 export const WALL_HEIGHT = 100000;

@@ -1,25 +1,15 @@
 import { useState } from "react";
-import { Position } from "./types";
+import { Square } from "./types/square";
 
 export interface CardProps {
-  id: number;
-  position: Position;
-  size: { width: number; height: number };
+  card: Square;
   isSelected: boolean;
   isSelectedOnly: boolean;
-  color: string;
 }
 
-export function Card({
-  id: cardId,
-  position,
-  size,
-  isSelected,
-  isSelectedOnly,
-  color,
-}: CardProps) {
+export function Card({ card, isSelected, isSelectedOnly }: CardProps) {
   const [isTyping, setIsTyping] = useState(false);
-  const [text, setText] = useState(`Card #${cardId}`);
+  const [text, setText] = useState(`Card #${card.id}`);
 
   function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setText(e.target.value);
@@ -42,13 +32,14 @@ export function Card({
       } rounded-lg py-1 px-2`}
       style={{
         position: "absolute",
-        width: size.width,
-        height: size.height,
-        left: position.x,
-        top: position.y,
-        backgroundColor: color,
+        width: card.size.width,
+        height: card.size.height,
+        left: card.position.x,
+        top: card.position.y,
+        backgroundColor: card.color,
+        zIndex: card.zIndex,
       }}
-      data-card-id={cardId}
+      data-card-id={card.id}
     >
       {isTyping ? (
         <textarea
