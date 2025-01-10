@@ -7,6 +7,8 @@ export default function Nav({
   handleDeleteCard,
   convertToSelect,
   updateCardColor,
+  moveToTopOfZStack,
+  moveToBottomOfZStack,
   isCardSelected,
 }: {
   selection: number[];
@@ -14,6 +16,8 @@ export default function Nav({
   handleDeleteCard: () => void;
   convertToSelect: () => void;
   updateCardColor: (colorMap: { [key: number]: string }) => void;
+  moveToTopOfZStack: ({ cardIds }: { cardIds: number[] }) => void;
+  moveToBottomOfZStack: ({ cardIds }: { cardIds: number[] }) => void;
   isCardSelected: boolean;
 }) {
   function handleColorChange(color: ColorResult) {
@@ -47,6 +51,21 @@ export default function Nav({
         isCardSelected={isCardSelected}
         handleColorChange={handleColorChange}
       />
+
+      <button
+        onClick={() => {
+          moveToTopOfZStack({ cardIds: selection });
+        }}
+      >
+        맨 위로
+      </button>
+      <button
+        onClick={() => {
+          moveToBottomOfZStack({ cardIds: selection });
+        }}
+      >
+        맨 뒤로
+      </button>
     </nav>
   );
 }

@@ -4,7 +4,6 @@ export class Square {
   public id: number;
   public position: Position;
   public size: { width: number; height: number };
-  // public isSelected: boolean;
   public color: string;
 
   // 유저가 선택한 스퀘어는 selection에서 관리합니다.
@@ -13,20 +12,17 @@ export class Square {
     position,
     size = { width: 100, height: 40 },
     color = "transparent",
-  }: // isSelected = false,
-  {
+  }: {
     id: number;
     position: Position;
     size?: { width: number; height: number };
     color?: string;
     zIndex?: number;
-    // isSelected?: boolean;
   }) {
     this.id = id;
     this.position = position;
     this.size = size;
     this.color = color;
-    // this.isSelected = isSelected;
   }
 
   setLT({ x, y }: Position) {
@@ -73,13 +69,30 @@ export class Square {
     };
   }
 
-  checkCenterIsIn({ p1, p2 }: { p1: Position; p2: Position }) {
-    const center = this.getCenter();
+  checkIsIn({
+    absPosition1,
+    absPosition2,
+  }: {
+    absPosition1: Position;
+    absPosition2: Position;
+  }) {
+    // left top position
+    const positionLT = {
+      x: Math.min(absPosition1.x, absPosition2.x),
+      y: Math.min(absPosition1.y, absPosition2.y),
+    };
+
+    // right bottom position
+    const positionRB = {
+      x: Math.max(absPosition1.x, absPosition2.x),
+      y: Math.max(absPosition1.y, absPosition2.y),
+    };
+
     return (
-      center.x >= p1.x &&
-      center.x <= p2.x &&
-      center.y >= p1.y &&
-      center.y <= p2.y
+      this.position.x >= positionLT.x &&
+      this.position.y >= positionLT.y &&
+      this.position.x + this.size.width <= positionRB.x &&
+      this.position.y + this.size.height <= positionRB.y
     );
   }
 }

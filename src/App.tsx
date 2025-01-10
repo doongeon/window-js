@@ -9,12 +9,11 @@ import {
   WALL_HEIGHT,
   ResizeBtn,
   MouseType,
+  MouseTarget,
 } from "./types";
 import Nav from "./components/nav";
 import useSelection from "./hooks/use-selection";
 import useViewState from "./model/use-view-state";
-
-type MouseTarget = "bg" | "card" | "resizeBtn";
 
 function App() {
   // 모델 변수
@@ -31,12 +30,15 @@ function App() {
     pageOffset,
     addOnZStack,
     moveToTopOfZStack,
+    moveToBottomOfZStack,
     updatePageOffset,
   } = useViewState();
+
+  // 애플리케이션 상태 스테이트
+  const [mouseType, setMouseType] = useState<MouseType>("hand");
   const { selection, clearSelection, updateSelection } = useSelection();
 
   // 마우스 관련 뷰 스테이트
-  const [mouseType, setMouseType] = useState<MouseType>("hand");
   const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
     x: 0,
     y: 0,
@@ -110,11 +112,9 @@ function App() {
 
       // when user select card
       if (cardId) {
-        if (selection.length === 0 || !selection.includes(cardId)) {
+        if (!selection.includes(cardId)) {
           updateSelection({ newSelection: [cardId] });
         }
-
-        moveToTopOfZStack({ cardId });
         setMouseTarget("card");
         return;
       }
@@ -131,16 +131,16 @@ function App() {
     // 네비게이션에서 select를 클릭하면 마우스 타입이 select입니다
     // select 타입은 드래그 해서 여러 카드를 선택할 수 있도록 합니다.
     if (mouseType === "select") {
-      if (cardId) {
-        updateSelection({ newSelection: [cardId] });
-      }
+      // if (cardId) {
+      //   updateSelection({ newSelection: [cardId] });
+      // }
 
-      if (!cardId) {
-        // when user select background
-        setMouseTarget("bg");
-        clearSelection();
-        return;
-      }
+      // if (!cardId) {
+      //   // when user select background
+      setMouseTarget("bg");
+      clearSelection();
+      return;
+      // }
     }
   }
 
@@ -210,19 +210,15 @@ function App() {
           pageOffset,
         });
 
-        const p1 = {
-          x: Math.min(mouseStart.x, mouseEnd.x),
-          y: Math.min(mouseStart.y, mouseEnd.y),
-        };
-        const p2 = {
-          x: Math.max(mouseStart.x, mouseEnd.x),
-          y: Math.max(mouseStart.y, mouseEnd.y),
-        };
-
         updateSelection({
           newSelection: Object.keys(cardMap).reduce<number[]>((result, key) => {
             const cardId = parseInt(key, 10);
-            if (cardMap[cardId].checkCenterIsIn({ p1, p2 })) {
+            if (
+              cardMap[cardId].checkIsIn({
+                absPosition1: mouseStart,
+                absPosition2: mouseEnd,
+              })
+            ) {
               result.push(cardId);
             }
             return result;
@@ -259,6 +255,8 @@ function App() {
         handleDeleteCard={handleDeleteCard}
         updateCardColor={updateCardColor}
         convertToSelect={convertToSelect}
+        moveToTopOfZStack={moveToTopOfZStack}
+        moveToBottomOfZStack={moveToBottomOfZStack}
         isCardSelected={selection.length > 0}
       />
       <div

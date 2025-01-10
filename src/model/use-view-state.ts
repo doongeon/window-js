@@ -13,13 +13,35 @@ export default function useViewState() {
     });
   }
 
-  function moveToTopOfZStack({ cardId }: { cardId: number }) {
+  function moveToTopOfZStack({ cardIds }: { cardIds: number[] }) {
     setZStack((prev) => {
-      const idx = prev.indexOf(cardId);
-      const head = prev.slice(0, idx);
-      const tail = prev.slice(idx + 1);
-      const newZStack = [...head, ...tail, prev[idx]];
-      return newZStack;
+      const targetIds: number[] = [];
+      const newZStack: number[] = [];
+      prev.forEach((cardId) => {
+        if (cardIds.includes(cardId)) {
+          targetIds.push(cardId);
+        } else {
+          newZStack.push(cardId);
+        }
+      });
+
+      return [...newZStack, ...targetIds];
+    });
+  }
+
+  function moveToBottomOfZStack({ cardIds }: { cardIds: number[] }) {
+    setZStack((prev) => {
+      const targetIds: number[] = [];
+      const newZStack: number[] = [];
+      prev.forEach((cardId) => {
+        if (cardIds.includes(cardId)) {
+          targetIds.push(cardId);
+        } else {
+          newZStack.push(cardId);
+        }
+      });
+
+      return [...targetIds, ...newZStack];
     });
   }
 
@@ -37,6 +59,7 @@ export default function useViewState() {
     zStack,
     addOnZStack,
     moveToTopOfZStack,
+    moveToBottomOfZStack,
     updatePageOffset,
   };
 }

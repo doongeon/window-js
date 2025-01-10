@@ -9,28 +9,18 @@ export interface CardProps {
 }
 
 export function Card({ card, zIndex, isSelected, isSelectedOnly }: CardProps) {
-  const [isTyping, setIsTyping] = useState(false);
-  const [text, setText] = useState(`Card #${card.id}`);
+  const [text] = useState(`Card #${card.id}`);
 
-  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setText(e.target.value);
-  }
-
-  function handleBlur() {
-    setIsTyping(false);
-  }
-
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === "Escape") {
-      setIsTyping(false);
-    }
+  function handleDoubleClick(e: React.MouseEvent) {
+    console.log(e);
   }
 
   return (
     <div
-      className={`card border container ${
-        isSelected ? "ring-8" : ""
-      } rounded-lg py-1 px-2`}
+      className={`card border border-white container outline-none
+        ${isSelected ? "ring-4" : ""} 
+      rounded-lg`}
+      onDoubleClick={handleDoubleClick}
       style={{
         position: "absolute",
         width: card.size.width,
@@ -42,23 +32,28 @@ export function Card({ card, zIndex, isSelected, isSelectedOnly }: CardProps) {
       }}
       data-card-id={card.id}
     >
-      {isTyping ? (
-        <textarea
-          className="w-full h-full"
-          autoFocus
-          defaultValue={text}
-          onChange={handleChange}
-          onBlur={handleBlur}
-          onKeyUp={handleKeyDown}
-        />
-      ) : (
-        <p className="w-full h-full">{text}</p>
-      )}
-      <div className={`${isSelectedOnly ? "" : "hidden"}`}>
-        <button className="card-lt w-2 h-2 bg-slate-50 absolute left-[-4px] top-[-4px]"></button>
-        <button className="card-rt w-2 h-2 bg-slate-50 absolute right-[-4px] top-[-4px]"></button>
-        <button className="card-lb w-2 h-2 bg-slate-50 absolute left-[-4px] bot-[4px]"></button>
-        <button className="card-rb w-2 h-2 bg-slate-50 absolute right-[-4px] bot-[4px]"></button>
+      <textarea
+        className="w-full h-full bg-transparent resize-none overflow-hidden border-none outline-none"
+        defaultValue={text}
+        draggable={false}
+      />
+      <div className={`resize-btns ${isSelectedOnly ? "" : "hidden"}`}>
+        <button
+          className="card-lt w-2 h-2 bg-slate-50 border border-black absolute"
+          style={{ left: "-10px", top: "-10px" }}
+        ></button>
+        <button
+          className="card-rt w-2 h-2 bg-slate-50 border border-black absolute"
+          style={{ right: "-10px", top: "-10px" }}
+        ></button>
+        <button
+          className="card-lb w-2 h-2 bg-slate-50 border border-black absolute"
+          style={{ left: "-10px", bottom: "-10px" }}
+        ></button>
+        <button
+          className="card-rb w-2 h-2 bg-slate-50 border border-black absolute"
+          style={{ right: "-10px", bottom: "-10px" }}
+        ></button>
       </div>
     </div>
   );
