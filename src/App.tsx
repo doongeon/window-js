@@ -2,7 +2,6 @@ import { useState } from "react";
 import { findAncestor, getAbsPosition } from "./utils";
 import SelectSquare from "./components/select-suqare";
 import { Card } from "./components/card";
-import { ColorResult } from "react-color";
 import useCardMap from "./model/use-card-map";
 import {
   Position,
@@ -13,10 +12,12 @@ import {
 } from "./types";
 import Nav from "./components/nav";
 import useSelection from "./hooks/use-selection";
+import useViewState from "./model/use-view-state";
 
 type MouseTarget = "bg" | "card" | "resizeBtn";
 
 function App() {
+  // 모델 변수
   const {
     cardMap,
     addNewCard,
@@ -25,35 +26,41 @@ function App() {
     updatePosition: updateCardPosition,
     resize,
   } = useCardMap();
-  const [zStack, setZStack] = useState<number[]>([]);
+  const {
+    zStack,
+    pageOffset,
+    addOnZStack,
+    moveToTopOfZStack,
+    updatePageOffset,
+  } = useViewState();
   const { selection, clearSelection, updateSelection } = useSelection();
+
+  // 마우스 관련 뷰 스테이트
   const [mouseType, setMouseType] = useState<MouseType>("hand");
-  const [mouseTarget, setMouseTarget] = useState<MouseTarget | null>(null);
-  const [pageOffset, setPageOffset] = useState<Position>({ x: 0, y: 0 });
-  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
-  const [resizeType, setResizeType] = useState<ResizeBtn | undefined>();
-  const [selectSquare, setSelectSquare] = useState<{
-    start: Position;
-    end: Position;
-  }>({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
   const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
     x: 0,
     y: 0,
   });
+  const [mouseTarget, setMouseTarget] = useState<MouseTarget | undefined>();
+  const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
+  const [resizeType, setResizeType] = useState<ResizeBtn | undefined>();
+  const [selectSquare, setSelectSquare] = useState<
+    | {
+        start: Position;
+        end: Position;
+      }
+    | undefined
+  >();
   const [startPositionMap, setStartPositionMap] = useState<{
     [key: number]: Position;
-  }>({});
+  }>({}); // 카드 드레그시 카드 시작 포지션 저장
 
   function handleCardAdd() {
     const cardId = addNewCard({
       position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
     });
 
-    setZStack((prev) => {
-      const newZStack = [...prev];
-      newZStack.push(cardId);
-      return newZStack;
-    });
+    addOnZStack({ cardId });
   }
 
   function handleDeleteCard() {
@@ -107,13 +114,7 @@ function App() {
           updateSelection({ newSelection: [cardId] });
         }
 
-        setZStack((prev) => {
-          const idx = prev.indexOf(cardId);
-          const head = prev.slice(0, idx);
-          const tail = prev.slice(idx + 1);
-          const newZStack = [...head, ...tail, prev[idx]];
-          return newZStack;
-        });
+        moveToTopOfZStack({ cardId });
         setMouseTarget("card");
         return;
       }
@@ -237,40 +238,26 @@ function App() {
     // 사용자가 드래그 한 만큼 화면 오프셋 조정
     if (mouseType === "hand") {
       if (mouseTarget === "bg") {
-        setPageOffset((prev) => {
-          const newPageOffset = { ...prev };
-          newPageOffset.x += dragOffset.x;
-          newPageOffset.y += dragOffset.y;
-          return newPageOffset;
-        });
+        updatePageOffset(dragOffset);
       }
     }
 
     // 마우스 관련 값 초기화
-    console.log(zStack);
     setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
     setMouseType("hand");
-    setMouseTarget(null);
+    setMouseTarget(undefined);
     setMouseStartPosition({ x: 0, y: 0 });
-    setSelectSquare({ start: { x: 0, y: 0 }, end: { x: 0, y: 0 } });
-  }
-
-  function handleColorChange(color: ColorResult) {
-    updateCardColor(
-      selection.reduce<{ [key: number]: string }>((result, cardId) => {
-        result[cardId] = color.hex;
-        return result;
-      }, {})
-    );
+    setSelectSquare(undefined);
   }
 
   return (
     <>
       <Nav
+        selection={selection}
         handleCardAdd={handleCardAdd}
         handleDeleteCard={handleDeleteCard}
-        handleColorChange={handleColorChange}
+        updateCardColor={updateCardColor}
         convertToSelect={convertToSelect}
         isCardSelected={selection.length > 0}
       />
@@ -301,8 +288,8 @@ function App() {
           />
         ))}
         <SelectSquare
-          start={selectSquare.start}
-          end={selectSquare.end}
+          start={selectSquare?.start}
+          end={selectSquare?.end}
           pageOffset={pageOffset}
         />
       </div>

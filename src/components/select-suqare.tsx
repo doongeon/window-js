@@ -1,17 +1,16 @@
-import { Position } from "../types";
-
-const WALL_WIDTH = 100000;
-const WALL_HEIGHT = 100000;
+import { Position, WALL_HEIGHT, WALL_WIDTH } from "../types";
 
 export default function SelectSquare({
   start,
   end,
   pageOffset,
 }: {
-  start: { x: number; y: number };
-  end: { x: number; y: number };
+  start?: { x: number; y: number };
+  end?: { x: number; y: number };
   pageOffset: Position;
 }) {
+  if (!start || !end) return;
+
   const left = Math.min(start.x, end.x) + WALL_WIDTH / 2 - pageOffset.x;
   const top = Math.min(start.y, end.y) + WALL_HEIGHT / 2 - pageOffset.y;
   const width = Math.abs(end.x - start.x);

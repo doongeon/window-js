@@ -2,18 +2,29 @@ import { ColorResult } from "react-color";
 import ColorBtn from "./color-btn";
 
 export default function Nav({
+  selection,
   handleCardAdd,
   handleDeleteCard,
-  handleColorChange,
   convertToSelect,
+  updateCardColor,
   isCardSelected,
 }: {
+  selection: number[];
   handleCardAdd: () => void;
   handleDeleteCard: () => void;
-  handleColorChange: (color: ColorResult) => void;
   convertToSelect: () => void;
+  updateCardColor: (colorMap: { [key: number]: string }) => void;
   isCardSelected: boolean;
 }) {
+  function handleColorChange(color: ColorResult) {
+    updateCardColor(
+      selection.reduce<{ [key: number]: string }>((result, cardId) => {
+        result[cardId] = color.hex;
+        return result;
+      }, {})
+    );
+  }
+
   return (
     <nav className="py-2 px-4 fixed top-0 left-0 z-10 w-full flex items-end justify-start gap-4 text-white border-b bg-gradient-to-r from-cyan-400 to-pink-400 border-transparent">
       <h1 className="text-3xl bg-clip-text font-bold">Window.js</h1>
