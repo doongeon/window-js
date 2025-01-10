@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Square } from "../types/square";
 
 export interface CardProps {
@@ -8,19 +7,12 @@ export interface CardProps {
   isSelectedOnly: boolean;
 }
 
-export function Card({ card, zIndex, isSelected, isSelectedOnly }: CardProps) {
-  const [text] = useState(`Card #${card.id}`);
-
-  function handleDoubleClick(e: React.MouseEvent) {
-    console.log(e);
-  }
-
+export function Card({ card, zIndex, isSelected }: CardProps) {
   return (
     <div
-      className={`card border border-white container outline-none
+      className={`card border border-slate-900 dark:border-white container text-black dark:text-white outline-none
         ${isSelected ? "ring-4" : ""} 
       rounded-lg`}
-      onDoubleClick={handleDoubleClick}
       style={{
         position: "absolute",
         width: card.size.width,
@@ -31,13 +23,24 @@ export function Card({ card, zIndex, isSelected, isSelectedOnly }: CardProps) {
         zIndex: zIndex,
       }}
       data-card-id={card.id}
+    ></div>
+  );
+}
+
+export function CardAdjuster({ card }: { card: Square }) {
+  return (
+    <div
+      className={`card-adjuster ring-4`}
+      style={{
+        position: "absolute",
+        width: card.size.width,
+        height: card.size.height,
+        left: card.position.x,
+        top: card.position.y,
+        zIndex: 9999,
+      }}
     >
-      <textarea
-        className="w-full h-full bg-transparent resize-none overflow-hidden border-none outline-none"
-        defaultValue={text}
-        draggable={false}
-      />
-      <div className={`resize-btns ${isSelectedOnly ? "" : "hidden"}`}>
+      <div className="resize-btns">
         <button
           className="card-lt w-2 h-2 bg-slate-50 border border-black absolute"
           style={{ left: "-10px", top: "-10px" }}

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { findAncestor, getAbsPosition } from "./utils";
 import SelectSquare from "./components/select-suqare";
-import { Card } from "./components/card";
+import { Card, CardAdjuster } from "./components/card";
 import useCardMap from "./model/use-card-map";
 import {
   Position,
@@ -260,7 +260,7 @@ function App() {
         isCardSelected={selection.length > 0}
       />
       <div
-        className={`cards relative bg-slate-800 text-white`}
+        className={`cards relative bg-white dark:bg-zinc-600`}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -290,6 +290,9 @@ function App() {
           end={selectSquare?.end}
           pageOffset={pageOffset}
         />
+        {selection.length === 1 && (
+          <CardAdjuster card={cardMap[selection[0]]} />
+        )}
       </div>
     </>
   );
