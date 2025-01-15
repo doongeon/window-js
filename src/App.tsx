@@ -77,7 +77,6 @@ function App() {
 
   function handleMouseDown(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
-    console.log(target);
     const cardElement = findAncestor({
       start: e.target as HTMLElement,
       selector: ".card",
