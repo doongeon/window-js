@@ -10,7 +10,7 @@ export default function Auth() {
       if (code) {
         try {
           const response = await fetch(
-            "http://3.84.119.226:8080/api/auth/callback",
+            "https://3.84.119.226:8080/api/auth/callback",
             {
               method: "POST",
               headers: {
