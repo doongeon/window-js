@@ -86,12 +86,12 @@ function App() {
     setMouseType("select");
   }
 
-  function handleDoubleClick(e: React.MouseEvent) {
-    const target = e.target as HTMLElement;
-    const geulElement = findAncestor({
-      start: target,
-      selector: ".geul",
-    });
+  function handleDoubleClick() {
+    // const target = e.target as HTMLElement;
+    // const geulElement = findAncestor({
+    //   start: target,
+    //   selector: ".geul",
+    // });
   }
 
   function handleMouseDown(e: React.MouseEvent) {
