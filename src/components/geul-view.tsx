@@ -3,19 +3,14 @@ import { Geul } from "../types/guel";
 export interface GeulProps {
   geul: Geul;
   zIndex: number;
+  editable: boolean;
   isSelected: boolean;
-  isSelectedOnly: boolean;
 }
 
-export function GuelView({
-  geul,
-  zIndex,
-  isSelected,
-  isSelectedOnly,
-}: GeulProps) {
+export function GuelView({ geul, zIndex, editable, isSelected }: GeulProps) {
   return (
     <div
-      className={`asset geul text-black dark:text-white outline-none break-words
+      className={`asset geul text-black dark:text-white outline-none break-words overflow-y-scroll
           ${isSelected ? "ring-4" : ""}`}
       style={{
         position: "absolute",
@@ -27,7 +22,7 @@ export function GuelView({
         zIndex: zIndex,
       }}
       data-asset-id={geul.id}
-      contentEditable={isSelectedOnly}
+      contentEditable={editable}
     >
       글 #{geul.id}
     </div>

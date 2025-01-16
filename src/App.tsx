@@ -86,22 +86,15 @@ function App() {
     setMouseType("select");
   }
 
-  function handleDoubleClick() {
-    // const target = e.target as HTMLElement;
-    // const geulElement = findAncestor({
-    //   start: target,
-    //   selector: ".geul",
-    // });
-  }
-
   function handleMouseDown(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
-    const cardElement = findAncestor({
+    const assetElement = findAncestor({
       start: target,
       selector: ".asset",
     });
-    const cardId =
-      cardElement?.dataset.assetId && parseInt(cardElement.dataset.assetId, 10);
+    const assetId =
+      assetElement?.dataset.assetId &&
+      parseInt(assetElement.dataset.assetId, 10);
 
     setMouseStartPosition({ x: e.pageX, y: e.pageY });
 
@@ -130,15 +123,17 @@ function App() {
       }
 
       // when user select card
-      if (cardId) {
-        if (!selection.includes(cardId)) {
-          updateSelection({ newSelection: [cardId] });
+      if (assetId) {
+        if (!selection.includes(assetId)) {
+          updateSelection({ newSelection: [assetId] });
+        } else if (assetElement.matches(".geul")) {
+          setMouseType("text");
         }
-        setMouseTarget("card");
+        setMouseTarget("asset");
         return;
       }
 
-      if (!cardId) {
+      if (!assetId) {
         setMouseTarget("bg");
       }
 
@@ -150,22 +145,33 @@ function App() {
     // 네비게이션에서 select를 클릭하면 마우스 타입이 select입니다
     // select 타입은 드래그 해서 여러 카드를 선택할 수 있도록 합니다.
     if (mouseType === "select") {
-      // if (cardId) {
-      //   updateSelection({ newSelection: [cardId] });
-      // }
-
-      // if (!cardId) {
-      //   // when user select background
       setMouseTarget("bg");
       clearSelection();
       return;
-      // }
+    }
+
+    // 마우스 타입이 text일때
+    // 선택된 글 자산을 한번더 클릭하면 마우스 타입이 'text'입니다.
+    // text타입일때는 글 수정이 가능합니다.
+    if (mouseType === "text") {
+      if (assetId && !selection.includes(assetId)) {
+        setMouseType("hand");
+        clearSelection();
+        updateSelection({ newSelection: [assetId] });
+        return;
+      }
+
+      if (!assetId) {
+        setMouseType("hand");
+        clearSelection();
+        return;
+      }
     }
   }
 
   function handleMouseMove(e: React.MouseEvent) {
     if (mouseType === "hand") {
-      if (mouseTarget === "card") {
+      if (mouseTarget === "asset") {
         if (Object.keys(startPositionMap).length === 0) {
           setStartPositionMap(() => {
             const newStartPositionMap: { [key: number]: Position } = {};
@@ -250,8 +256,6 @@ function App() {
   }
 
   function handleMouseUp() {
-    // console.log("mouse type: " + mouseType, " mouse target: " + mouseTarget);
-    // 사용자가 드래그 한 만큼 화면 오프셋 조정
     if (mouseType === "hand") {
       if (mouseTarget === "bg") {
         updatePageOffset(dragOffset);
@@ -261,7 +265,9 @@ function App() {
     // 마우스 관련 값 초기화
     setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
-    setMouseType("hand");
+    if (mouseType !== "text") {
+      setMouseType("hand");
+    }
     setMouseTarget(undefined);
     setMouseStartPosition({ x: 0, y: 0 });
     setSelectSquare(undefined);
@@ -282,7 +288,6 @@ function App() {
       />
       <div
         className={`assets relative bg-white dark:bg-zinc-600`}
-        onDoubleClick={handleDoubleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -296,7 +301,12 @@ function App() {
           top: -WALL_HEIGHT / 2,
         }}
       >
-        <Assets assets={assets} selection={selection} zStack={zStack} />
+        <Assets
+          assets={assets}
+          selection={selection}
+          zStack={zStack}
+          mouseType={mouseType}
+        />
         <SelectSquare
           start={selectSquare?.start}
           end={selectSquare?.end}

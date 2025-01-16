@@ -1,5 +1,5 @@
-export type MouseType = "select" | "hand";
-export type MouseTarget = "bg" | "card" | "resizeBtn";
+export type MouseType = "select" | "hand" | "text";
+export type MouseTarget = "bg" | "asset" | "resizeBtn";
 export type ResizeBtn = "rt" | "lt" | "lb" | "rb";
 
 export const WALL_WIDTH = 100000;
