@@ -22,6 +22,7 @@ export default function ColorBtn({
     <div className="relative">
       <button
         className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
+        disabled={!isCardSelected}
         onClick={handleClick}
       >
         색상

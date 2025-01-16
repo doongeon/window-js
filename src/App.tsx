@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { findAncestor, getAbsPosition } from "./utils";
 import SelectSquare from "./components/select-suqare";
-import { Card, CardAdjuster } from "./components/card";
-import useCardMap from "./model/use-card-map";
+
 import {
   Position,
   WALL_WIDTH,
@@ -14,17 +13,21 @@ import {
 import Nav from "./components/nav";
 import useSelection from "./hooks/use-selection";
 import useViewState from "./model/use-view-state";
+import { AssetAdjuster } from "./components/asset-adjuster";
+import Assets from "./components/assets";
+import useAssetMap from "./model/use-asset-map";
 
 function App() {
   // 모델 변수
   const {
-    cardMap,
-    addNewCard,
-    deleteCard,
+    assets,
+    addNewSquare,
+    addNewGeul,
+    deleteAsset,
     updateColor: updateCardColor,
     updatePosition: updateCardPosition,
     resize,
-  } = useCardMap();
+  } = useAssetMap();
   const {
     zStack,
     pageOffset,
@@ -57,17 +60,25 @@ function App() {
     [key: number]: Position;
   }>({}); // 카드 드레그시 카드 시작 포지션 저장
 
-  function handleCardAdd() {
-    const cardId = addNewCard({
+  function handleAddSquare() {
+    const assetId = addNewSquare({
       position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
     });
 
-    addOnZStack({ cardId });
+    addOnZStack({ assetId });
   }
 
-  function handleDeleteCard() {
+  function handleAddGeul() {
+    const assetId = addNewGeul({
+      position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
+    });
+
+    addOnZStack({ assetId });
+  }
+
+  function handleDeleteAsset() {
     clearSelection();
-    deleteCard(selection);
+    deleteAsset(selection);
   }
 
   function convertToSelect() {
@@ -75,14 +86,22 @@ function App() {
     setMouseType("select");
   }
 
+  function handleDoubleClick(e: React.MouseEvent) {
+    const target = e.target as HTMLElement;
+    const geulElement = findAncestor({
+      start: target,
+      selector: ".geul",
+    });
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
     const cardElement = findAncestor({
-      start: e.target as HTMLElement,
-      selector: ".card",
+      start: target,
+      selector: ".asset",
     });
     const cardId =
-      cardElement?.dataset.cardId && parseInt(cardElement.dataset.cardId, 10);
+      cardElement?.dataset.assetId && parseInt(cardElement.dataset.assetId, 10);
 
     setMouseStartPosition({ x: e.pageX, y: e.pageY });
 
@@ -94,16 +113,16 @@ function App() {
     // hand는 기본 타입입니다.
     if (mouseType === "hand") {
       if (target.tagName === "BUTTON") {
-        if (target.matches(".card-lt")) {
+        if (target.matches(".asset-lt")) {
           setResizeType("lt");
         }
-        if (target.matches(".card-rt")) {
+        if (target.matches(".asset-rt")) {
           setResizeType("rt");
         }
-        if (target.matches(".card-lb")) {
+        if (target.matches(".asset-lb")) {
           setResizeType("lb");
         }
-        if (target.matches(".card-rb")) {
+        if (target.matches(".asset-rb")) {
           setResizeType("rb");
         }
         setMouseTarget("resizeBtn");
@@ -151,7 +170,7 @@ function App() {
           setStartPositionMap(() => {
             const newStartPositionMap: { [key: number]: Position } = {};
             selection.forEach((cardId) => {
-              newStartPositionMap[cardId] = { ...cardMap[cardId].position };
+              newStartPositionMap[cardId] = { ...assets[cardId].position };
             });
             return newStartPositionMap;
           });
@@ -211,10 +230,10 @@ function App() {
         });
 
         updateSelection({
-          newSelection: Object.keys(cardMap).reduce<number[]>((result, key) => {
+          newSelection: Object.keys(assets).reduce<number[]>((result, key) => {
             const cardId = parseInt(key, 10);
             if (
-              cardMap[cardId].checkIsIn({
+              assets[cardId].checkIsIn({
                 absPosition1: mouseStart,
                 absPosition2: mouseEnd,
               })
@@ -252,8 +271,9 @@ function App() {
     <>
       <Nav
         selection={selection}
-        handleCardAdd={handleCardAdd}
-        handleDeleteCard={handleDeleteCard}
+        handleAddSquare={handleAddSquare}
+        handleAddGeul={handleAddGeul}
+        handleDeleteAsset={handleDeleteAsset}
         updateCardColor={updateCardColor}
         convertToSelect={convertToSelect}
         moveToTopOfZStack={moveToTopOfZStack}
@@ -261,7 +281,8 @@ function App() {
         isCardSelected={selection.length > 0}
       />
       <div
-        className={`cards relative bg-white dark:bg-zinc-600`}
+        className={`assets relative bg-white dark:bg-zinc-600`}
+        onDoubleClick={handleDoubleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -275,24 +296,14 @@ function App() {
           top: -WALL_HEIGHT / 2,
         }}
       >
-        {Object.values(cardMap).map((card) => (
-          <Card
-            key={card.id}
-            card={card}
-            zIndex={zStack.indexOf(card.id)}
-            isSelected={selection.includes(card.id)}
-            isSelectedOnly={
-              selection.length === 1 && selection.includes(card.id)
-            }
-          />
-        ))}
+        <Assets assets={assets} selection={selection} zStack={zStack} />
         <SelectSquare
           start={selectSquare?.start}
           end={selectSquare?.end}
           pageOffset={pageOffset}
         />
         {selection.length === 1 && (
-          <CardAdjuster card={cardMap[selection[0]]} />
+          <AssetAdjuster asset={assets[selection[0]]} />
         )}
       </div>
     </>

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSearchParams } from "react-router";
+import { redirect, useSearchParams } from "react-router";
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -23,12 +23,15 @@ export default function Auth() {
           if (response.ok) {
             const data = await response.json();
             console.log(data);
+            redirect("/");
           }
         } catch (error) {
           console.log(error);
         }
       } else {
         console.log("no code!");
+        alert("잘못된 접근");
+        redirect("/");
       }
     };
 

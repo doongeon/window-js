@@ -5,23 +5,23 @@ export default function useViewState() {
   const [zStack, setZStack] = useState<number[]>([]);
   const [pageOffset, setPageOffset] = useState<Position>({ x: 0, y: 0 });
 
-  function addOnZStack({ cardId }: { cardId: number }) {
+  function addOnZStack({ assetId }: { assetId: number }) {
     setZStack((prev) => {
       const newZStack = [...prev];
-      newZStack.push(cardId);
+      newZStack.push(assetId);
       return newZStack;
     });
   }
 
-  function moveToTopOfZStack({ cardIds }: { cardIds: number[] }) {
+  function moveToTopOfZStack({ assetIds }: { assetIds: number[] }) {
     setZStack((prev) => {
       const targetIds: number[] = [];
       const newZStack: number[] = [];
-      prev.forEach((cardId) => {
-        if (cardIds.includes(cardId)) {
-          targetIds.push(cardId);
+      prev.forEach((assetId) => {
+        if (assetIds.includes(assetId)) {
+          targetIds.push(assetId);
         } else {
-          newZStack.push(cardId);
+          newZStack.push(assetId);
         }
       });
 
@@ -29,15 +29,15 @@ export default function useViewState() {
     });
   }
 
-  function moveToBottomOfZStack({ cardIds }: { cardIds: number[] }) {
+  function moveToBottomOfZStack({ assetIds }: { assetIds: number[] }) {
     setZStack((prev) => {
       const targetIds: number[] = [];
       const newZStack: number[] = [];
-      prev.forEach((cardId) => {
-        if (cardIds.includes(cardId)) {
-          targetIds.push(cardId);
+      prev.forEach((assetId) => {
+        if (assetIds.includes(assetId)) {
+          targetIds.push(assetId);
         } else {
-          newZStack.push(cardId);
+          newZStack.push(assetId);
         }
       });
 

@@ -1,15 +1,16 @@
 import { useState } from "react";
 import { Square } from "../types/square";
 import { Position, ResizeBtn } from "../types";
+import { Geul } from "../types/guel";
 
-export default function useCardMap() {
-  const [cardMap, setCardMap] = useState<{ [key: number]: Square }>({});
+export default function useAssetMap() {
+  const [assets, setAssetMap] = useState<{ [key: number]: Square | Geul }>({});
   const [id, setId] = useState(0);
 
-  function addNewCard({ position }: { position: Position }) {
+  function addNewSquare({ position }: { position: Position }) {
     const newId = id + 1;
     setId(newId);
-    setCardMap((prev) => {
+    setAssetMap((prev) => {
       const newSquare = new Square({ id: newId, position });
       const newCardMap = { ...prev };
       newCardMap[newId] = newSquare;
@@ -18,23 +19,37 @@ export default function useCardMap() {
     return newId;
   }
 
-  function deleteCard(cardIds: number[]) {
-    if (cardIds.length < 1) return;
-    setCardMap((prev) => {
+  function addNewGeul({ position }: { position: Position }) {
+    const newId = id + 1;
+    setId(newId);
+    setAssetMap((prev) => {
+      const newSquare = new Geul({ id: newId, position });
       const newCardMap = { ...prev };
-      cardIds.forEach((cardId) => {
-        delete newCardMap[cardId];
-      });
+      newCardMap[newId] = newSquare;
       return newCardMap;
+    });
+    return newId;
+  }
+
+  function deleteAsset(assetIds: number[]) {
+    if (assetIds.length < 1) return;
+    setAssetMap((prev) => {
+      const newAssetMap = { ...prev };
+      assetIds.forEach((cardId) => {
+        delete newAssetMap[cardId];
+      });
+      return newAssetMap;
     });
   }
 
   function updateColor(colorMap: { [key: number]: string }) {
-    setCardMap((prev) => {
+    setAssetMap((prev) => {
       const newCardMap = { ...prev };
       Object.keys(colorMap).forEach((key) => {
         const cardId = parseInt(key, 10);
-        newCardMap[cardId].color = colorMap[cardId];
+        if (newCardMap[cardId] instanceof Square) {
+          newCardMap[cardId].color = colorMap[cardId];
+        }
       });
       return newCardMap;
     });
@@ -49,7 +64,7 @@ export default function useCardMap() {
     type?: ResizeBtn;
     position: Position;
   }) {
-    setCardMap((prev) => {
+    setAssetMap((prev) => {
       const newCardMap = { ...prev };
       switch (type) {
         case "lt":
@@ -81,7 +96,7 @@ export default function useCardMap() {
     mouseStartPosition: Position;
     mousePosition: Position;
   }) {
-    setCardMap((prev) => {
+    setAssetMap((prev) => {
       const newCardMap = { ...prev };
       selection.forEach((cardId) => {
         if (!startPositionMap[cardId]) return;
@@ -95,9 +110,10 @@ export default function useCardMap() {
   }
 
   return {
-    cardMap,
-    addNewCard,
-    deleteCard,
+    assets,
+    addNewSquare,
+    addNewGeul,
+    deleteAsset,
     updateColor,
     updatePosition,
     resize,
