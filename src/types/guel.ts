@@ -2,7 +2,7 @@ import { Position } from ".";
 import { Asset } from "./asset";
 
 export class Geul extends Asset {
-  public text: string;
+  public html: string;
 
   constructor({
     id,
@@ -19,10 +19,10 @@ export class Geul extends Asset {
       position,
       size,
     });
-    this.text = "";
+    this.html = `<p>글</p>`;
   }
 
-  updateText({ text }: { text: string }) {
-    this.text = text;
+  updateHtml({ html }: { html: string }) {
+    this.html = html;
   }
 }

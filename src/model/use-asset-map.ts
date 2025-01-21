@@ -4,6 +4,11 @@ import { Position, ResizeBtn } from "../types";
 import { Geul } from "../types/guel";
 
 export default function useAssetMap() {
+  /**
+   * TO DO
+   * 1. 글 편집된 글 Geul 객체에 저장
+   * 2. 로컬 스토리지에 저장후 로드
+   */
   const [assets, setAssetMap] = useState<{ [key: number]: Square | Geul }>({});
   const [id, setId] = useState(0);
 
@@ -12,9 +17,9 @@ export default function useAssetMap() {
     setId(newId);
     setAssetMap((prev) => {
       const newSquare = new Square({ id: newId, position });
-      const newCardMap = { ...prev };
-      newCardMap[newId] = newSquare;
-      return newCardMap;
+      const newAssets = { ...prev };
+      newAssets[newId] = newSquare;
+      return newAssets;
     });
     return newId;
   }
@@ -24,9 +29,9 @@ export default function useAssetMap() {
     setId(newId);
     setAssetMap((prev) => {
       const newSquare = new Geul({ id: newId, position });
-      const newCardMap = { ...prev };
-      newCardMap[newId] = newSquare;
-      return newCardMap;
+      const newAssets = { ...prev };
+      newAssets[newId] = newSquare;
+      return newAssets;
     });
     return newId;
   }
@@ -44,14 +49,14 @@ export default function useAssetMap() {
 
   function updateColor(colorMap: { [key: number]: string }) {
     setAssetMap((prev) => {
-      const newCardMap = { ...prev };
+      const newAssets = { ...prev };
       Object.keys(colorMap).forEach((key) => {
         const cardId = parseInt(key, 10);
-        if (newCardMap[cardId] instanceof Square) {
-          newCardMap[cardId].color = colorMap[cardId];
+        if (newAssets[cardId] instanceof Square) {
+          newAssets[cardId].color = colorMap[cardId];
         }
       });
-      return newCardMap;
+      return newAssets;
     });
   }
 
@@ -65,23 +70,23 @@ export default function useAssetMap() {
     position: Position;
   }) {
     setAssetMap((prev) => {
-      const newCardMap = { ...prev };
+      const newAssets = { ...prev };
       switch (type) {
         case "lt":
-          newCardMap[cardId].setLT(position);
+          newAssets[cardId].setLT(position);
           break;
         case "rt":
-          newCardMap[cardId].setRT(position);
+          newAssets[cardId].setRT(position);
           break;
         case "lb":
-          newCardMap[cardId].setLB(position);
+          newAssets[cardId].setLB(position);
           break;
         case "rb":
-          newCardMap[cardId].setRB(position);
+          newAssets[cardId].setRB(position);
           break;
         default:
       }
-      return newCardMap;
+      return newAssets;
     });
   }
 
@@ -97,15 +102,15 @@ export default function useAssetMap() {
     mousePosition: Position;
   }) {
     setAssetMap((prev) => {
-      const newCardMap = { ...prev };
+      const newAssets = { ...prev };
       selection.forEach((cardId) => {
         if (!startPositionMap[cardId]) return;
-        newCardMap[cardId].position.x =
+        newAssets[cardId].position.x =
           startPositionMap[cardId].x + mousePosition.x - mouseStartPosition.x;
-        newCardMap[cardId].position.y =
+        newAssets[cardId].position.y =
           startPositionMap[cardId].y + mousePosition.y - mouseStartPosition.y;
       });
-      return newCardMap;
+      return newAssets;
     });
   }
 

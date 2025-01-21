@@ -7,15 +7,21 @@ import {
   WALL_WIDTH,
   WALL_HEIGHT,
   ResizeBtn,
-  MouseType,
   MouseTarget,
+  MouseType,
 } from "./types";
 import Nav from "./components/nav";
 import useSelection from "./hooks/use-selection";
 import useViewState from "./model/use-view-state";
 import { AssetAdjuster } from "./components/asset-adjuster";
-import Assets from "./components/assets";
 import useAssetMap from "./model/use-asset-map";
+import OptionBar from "./components/option-bar";
+
+import { GuelView } from "./components/geul-view";
+import { Square } from "./types/square";
+import { SquareView } from "./components/square-view";
+import { Geul } from "./types/guel";
+import useSlate from "./hooks/use-slate";
 
 function App() {
   // 모델 변수
@@ -40,6 +46,10 @@ function App() {
   // 애플리케이션 상태 스테이트
   const [mouseType, setMouseType] = useState<MouseType>("hand");
   const { selection, clearSelection, updateSelection } = useSelection();
+
+  // 텍스트 에디터 스테이트
+  const { addNewSlate, getEditor, getGeul, renderElement, renderLeaf } =
+    useSlate();
 
   // 마우스 관련 뷰 스테이트
   const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
@@ -66,14 +76,18 @@ function App() {
     });
 
     addOnZStack({ assetId });
+    updateSelection({ newSelection: [assetId] });
   }
 
   function handleAddGeul() {
     const assetId = addNewGeul({
       position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
     });
+    addNewSlate({ geulId: assetId });
 
     addOnZStack({ assetId });
+    updateSelection({ newSelection: [assetId] });
+    setMouseType("text");
   }
 
   function handleDeleteAsset() {
@@ -128,6 +142,7 @@ function App() {
           updateSelection({ newSelection: [assetId] });
         } else if (assetElement.matches(".geul")) {
           setMouseType("text");
+          console.log(selection);
         }
         setMouseTarget("asset");
         return;
@@ -301,12 +316,35 @@ function App() {
           top: -WALL_HEIGHT / 2,
         }}
       >
-        <Assets
-          assets={assets}
-          selection={selection}
-          zStack={zStack}
-          mouseType={mouseType}
-        />
+        {Object.values(assets).map((asset) => {
+          if (asset instanceof Square) {
+            return (
+              <SquareView
+                key={asset.id}
+                square={asset}
+                zIndex={zStack.indexOf(asset.id)}
+                isSelected={selection.includes(asset.id)}
+                isSelectedOnly={
+                  selection.length === 1 && selection.includes(asset.id)
+                }
+              />
+            );
+          } else if (asset instanceof Geul) {
+            return (
+              <GuelView
+                mouseType={mouseType}
+                editor={getEditor({ geulId: asset.id })}
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
+                initialValue={getGeul({ geulId: asset.id })}
+                key={asset.id}
+                geul={asset}
+                zIndex={zStack.indexOf(asset.id)}
+                isSelected={selection.includes(asset.id)}
+              />
+            );
+          }
+        })}
         <SelectSquare
           start={selectSquare?.start}
           end={selectSquare?.end}
@@ -316,6 +354,11 @@ function App() {
           <AssetAdjuster asset={assets[selection[0]]} />
         )}
       </div>
+      <OptionBar
+        mouseType={mouseType}
+        selection={selection}
+        editor={getEditor({ geulId: selection[0] })}
+      />
     </>
   );
 }

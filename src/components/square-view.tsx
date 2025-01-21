@@ -12,7 +12,7 @@ export function SquareView({ square, zIndex, isSelected }: SquareProps) {
     <div
       className={`asset square border border-slate-900 dark:border-white container text-black dark:text-white outline-none
         ${isSelected ? "ring-4" : ""} 
-      rounded-lg`}
+      `}
       style={{
         position: "absolute",
         width: square.size.width,
