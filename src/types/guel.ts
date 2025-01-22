@@ -1,8 +1,9 @@
+import { Descendant } from "slate";
 import { Position } from ".";
 import { Asset } from "./asset";
 
 export class Geul extends Asset {
-  public html: string;
+  public slate: Descendant[];
 
   constructor({
     id,
@@ -19,10 +20,10 @@ export class Geul extends Asset {
       position,
       size,
     });
-    this.html = `<p>글</p>`;
+    this.slate = [{ type: "paragraph", children: [{ text: "새로운 글" }] }];
   }
 
-  updateHtml({ html }: { html: string }) {
-    this.html = html;
+  updateSlate({ slate }: { slate: Descendant[] }) {
+    this.slate = slate;
   }
 }

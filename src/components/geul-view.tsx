@@ -5,12 +5,11 @@ import {
   RenderLeafProps,
   Slate,
 } from "slate-react";
-import { Descendant, Editor } from "slate";
+import { Editor } from "slate";
 import { MouseType } from "../types";
 
 export interface GeulProps {
   editor: Editor;
-  initialValue: Descendant[];
   renderElement: (props: RenderElementProps) => JSX.Element;
   renderLeaf: (props: RenderLeafProps) => JSX.Element;
   geul: Geul;
@@ -21,17 +20,12 @@ export interface GeulProps {
 
 export function GuelView({
   editor,
-  initialValue,
   renderElement,
   renderLeaf,
   geul,
   zIndex,
   isSelected,
 }: GeulProps) {
-  /**
-   * TO DO
-   * 글자 편집 후 geul 객체에 저장하기.
-   */
   return (
     <>
       <div
@@ -48,7 +42,18 @@ export function GuelView({
         }}
         data-asset-id={geul.id}
       >
-        <Slate editor={editor} initialValue={initialValue}>
+        <Slate
+          editor={editor}
+          initialValue={geul.slate}
+          onChange={(slate) => {
+            const isAstChange = editor.operations.some(
+              (op) => "set_selection" !== op.type
+            );
+            if (isAstChange) {
+              geul.updateSlate({ slate });
+            }
+          }}
+        >
           <Editable
             className="w-full h-full"
             renderElement={renderElement}

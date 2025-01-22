@@ -48,8 +48,7 @@ function App() {
   const { selection, clearSelection, updateSelection } = useSelection();
 
   // 텍스트 에디터 스테이트
-  const { addNewSlate, getEditor, getGeul, renderElement, renderLeaf } =
-    useSlate();
+  const { addNewSlate, getEditor, renderElement, renderLeaf } = useSlate();
 
   // 마우스 관련 뷰 스테이트
   const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
@@ -142,7 +141,6 @@ function App() {
           updateSelection({ newSelection: [assetId] });
         } else if (assetElement.matches(".geul")) {
           setMouseType("text");
-          console.log(selection);
         }
         setMouseTarget("asset");
         return;
@@ -336,7 +334,6 @@ function App() {
                 editor={getEditor({ geulId: asset.id })}
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
-                initialValue={getGeul({ geulId: asset.id })}
                 key={asset.id}
                 geul={asset}
                 zIndex={zStack.indexOf(asset.id)}
