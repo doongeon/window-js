@@ -306,6 +306,7 @@ function App() {
   return (
     <>
       <Nav
+        assets={assets}
         selection={selection}
         handleAddSquare={handleAddSquare}
         handleAddGeul={handleAddGeul}
@@ -314,7 +315,6 @@ function App() {
         convertToSelect={convertToSelect}
         moveToTopOfZStack={moveToTopOfZStack}
         moveToBottomOfZStack={moveToBottomOfZStack}
-        isCardSelected={selection.length > 0}
       />
       <div
         className={`assets relative bg-white dark:bg-zinc-600`}

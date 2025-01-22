@@ -5,3 +5,19 @@
 body {
   overflow: hidden;
 }
+
+.scroll-bar {
+  @apply overflow-y-auto rounded-lg w-2;
+}
+
+.scroll-bar::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.scroll-bar::-webkit-scrollbar-track {
+  @apply bg-gray-100 rounded-full;
+}
+
+.scroll-bar::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}

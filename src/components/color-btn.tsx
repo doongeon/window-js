@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import { ColorResult, TwitterPicker } from "react-color";
+import { ColorResult, CompactPicker } from "react-color";
+
+interface ColorBtnProps {
+  label?: string;
+  active: boolean;
+  handleColorChange: (color: ColorResult) => void;
+}
 
 export default function ColorBtn({
-  isCardSelected,
+  label,
+  active,
   handleColorChange,
-}: {
-  isCardSelected: boolean;
-  handleColorChange: (color: ColorResult) => void;
-}) {
+}: ColorBtnProps) {
   const [isActive, setIsActive] = useState(false);
 
   function handleClick() {
@@ -15,24 +19,27 @@ export default function ColorBtn({
   }
 
   useEffect(() => {
-    if (!isCardSelected) setIsActive(false);
-  }, [isCardSelected]);
+    if (!active) setIsActive(false);
+  }, [active]);
 
   return (
-    <div className="relative">
+    <div className="relative flex justify-center">
       <button
-        className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
-        disabled={!isCardSelected}
+        className={`${active ? "opacity-100" : "opacity-40"}`}
+        disabled={!active}
         onClick={handleClick}
       >
-        색상
+        {label ?? "색갈"}
       </button>
-      <TwitterPicker
-        className={`${isActive ? "" : "hidden"} absolute`}
-        onChange={(color) => {
-          handleColorChange(color);
-        }}
-      />
+      {isActive && (
+        <div className="absolute top-full right-1/2">
+          <CompactPicker
+            onChange={(color) => {
+              handleColorChange(color);
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }

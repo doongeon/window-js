@@ -10,6 +10,9 @@ export default function Leaf(props: RenderLeafProps) {
         fontStyle: props.leaf.italic ? "italic" : "",
         color: props.leaf.color ? props.leaf.color : "black",
         textDecoration: props.leaf.underLine ? "underline" : "",
+        backgroundColor: props.leaf.bgColor
+          ? props.leaf.bgColor
+          : "transparent",
       }}
     >
       {props.children}

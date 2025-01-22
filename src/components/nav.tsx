@@ -1,8 +1,11 @@
 import { ColorResult } from "react-color";
 import ColorBtn from "./color-btn";
 import { useNavigate } from "react-router";
+import { Geul } from "../types/guel";
+import { Square } from "../types/square";
 
 export default function Nav({
+  assets,
   selection,
   handleAddSquare,
   handleAddGeul,
@@ -11,8 +14,8 @@ export default function Nav({
   updateCardColor,
   moveToTopOfZStack,
   moveToBottomOfZStack,
-  isCardSelected,
 }: {
+  assets: { [key: number]: Square | Geul };
   selection: number[];
   handleAddSquare: () => void;
   handleAddGeul: () => void;
@@ -21,7 +24,6 @@ export default function Nav({
   updateCardColor: (colorMap: { [key: number]: string }) => void;
   moveToTopOfZStack: ({ assetIds }: { assetIds: number[] }) => void;
   moveToBottomOfZStack: ({ assetIds }: { assetIds: number[] }) => void;
-  isCardSelected: boolean;
 }) {
   const navigate = useNavigate();
 
@@ -35,7 +37,7 @@ export default function Nav({
   }
 
   return (
-    <nav className="py-2 px-4 h-[60px] fixed top-0 left-0 z-10 w-full flex items-end justify-start gap-4 text-white border-b bg-gradient-to-r from-cyan-400 to-pink-400 border-transparent">
+    <nav className="py-2 px-4 h-[60px] fixed top-0 left-0 z-10 w-full flex items-end gap-4 text-white bg-gradient-to-r from-cyan-400 to-pink-400">
       <h1 className="text-3xl bg-clip-text font-bold">Window.js</h1>
       <button
         onClick={() => {
@@ -47,19 +49,23 @@ export default function Nav({
       <button onClick={handleAddSquare}>카드 추가</button>
       <button onClick={handleAddGeul}>텍스트 추가</button>
       <button
-        className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
-        disabled={!isCardSelected}
+        className={`${selection.length > 0 ? "opacity-100" : "opacity-40"}`}
+        disabled={selection.length === 0}
         onClick={handleDeleteAsset}
       >
         삭제
       </button>
       <ColorBtn
-        isCardSelected={isCardSelected}
+        active={
+          selection.length > 0 &&
+          selection.filter((assetId) => assets[assetId] instanceof Geul)
+            .length === 0
+        }
         handleColorChange={handleColorChange}
       />
       <button
-        className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
-        disabled={!isCardSelected}
+        className={`${selection.length > 0 ? "opacity-100" : "opacity-40"}`}
+        disabled={selection.length === 0}
         onClick={() => {
           moveToTopOfZStack({ assetIds: selection });
         }}
@@ -67,8 +73,8 @@ export default function Nav({
         맨 위로
       </button>
       <button
-        className={`${isCardSelected ? "opacity-100" : "opacity-40"}`}
-        disabled={!isCardSelected}
+        className={`${selection.length > 0 ? "opacity-100" : "opacity-40"}`}
+        disabled={selection.length === 0}
         onClick={() => {
           moveToBottomOfZStack({ assetIds: selection });
         }}

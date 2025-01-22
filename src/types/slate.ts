@@ -36,6 +36,7 @@ export type FormattedText = {
   underLine?: true;
   fontSize?: FontSize;
   color?: string;
+  bgColor?: string;
   italic?: true;
 };
 

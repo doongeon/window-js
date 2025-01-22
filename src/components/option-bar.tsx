@@ -1,6 +1,8 @@
 import { MouseType } from "../types";
 import { Editor, Element, Transforms } from "slate";
 import { FontSize } from "../types/slate";
+import ColorBtn from "./color-btn";
+import { ColorResult } from "react-color";
 
 interface OptionBarProps {
   mouseType: MouseType;
@@ -20,7 +22,6 @@ export default function OptionBar({
    */
 
   const customEditor = {
-    // Bold Mark 토글
     toggleBoldMark() {
       const marks = Editor.marks(editor);
       if (marks && marks.bold) {
@@ -52,27 +53,15 @@ export default function OptionBar({
       Editor.addMark(editor, "fontSize", fontSize);
     },
 
-    setColor(color: string) {
-      Editor.addMark(editor, "color", color);
+    setColor(color: ColorResult) {
+      Editor.addMark(editor, "color", color.hex);
     },
 
-    // // Code Block 활성 여부 확인
-    // isCodeBlockActive(editor: CustomEditor) {
-    //   const [match] = Editor.nodes(editor, {
-    //     match: (n) => Element.isElement(n) && n.type === "code",
-    //   });
-    //   return !!match;
-    // },
-
-    // Code Block 토글
-    // toggleCodeBlock(editor: CustomEditor) {
-    //   const isActive = customEditor.isCodeBlockActive(editor);
-    //   Transforms.setNodes(
-    //     editor,
-    //     { type: isActive ? "paragraph" : "code" },
-    //     { match: (n) => Element.isElement(n) && Editor.isBlock(editor, n) }
-    //   );
-    // },
+    setBgColor(color: ColorResult) {
+      const currentBgColor = Editor.marks(editor)?.bgColor;
+      const newColor = currentBgColor === color.hex ? "transparent" : color.hex;
+      Editor.addMark(editor, "bgColor", newColor);
+    },
 
     setTextAlign(textAlign: "start" | "center" | "end") {
       Transforms.setNodes(
@@ -118,7 +107,15 @@ export default function OptionBar({
               <button onClick={() => customEditor.setTextAlign("end")}>
                 오른쪽 정렬
               </button>
-              <button onClick={() => customEditor.setColor("red")}>색깔</button>
+              <ColorBtn
+                active={true}
+                handleColorChange={customEditor.setColor}
+              />
+              <ColorBtn
+                label="배경색"
+                active={true}
+                handleColorChange={customEditor.setBgColor}
+              />
               <div className="border border-black flex flex-col py-1">
                 <p className="mx-auto">글자 크기</p>
                 <button onClick={() => customEditor.setFontSize("text-xl")}>
