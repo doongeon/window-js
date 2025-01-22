@@ -6,6 +6,7 @@ import {
   Slate,
 } from "slate-react";
 import { Editor } from "slate";
+import { useEffect, useRef } from "react";
 
 export interface GeulProps {
   editor: Editor;
@@ -26,6 +27,14 @@ export function GuelView({
   isSelected,
   editable,
 }: GeulProps) {
+  const editableRef = useRef<HTMLDivElement>(null); // Ref 생성
+
+  useEffect(() => {
+    if (editable && editableRef.current) {
+      editableRef.current.focus(); // Editable 엘리먼트에 포커스 지정
+    }
+  }, [editable]); // editable 상태가 변경될 때 포커스 실행
+
   return (
     <>
       <div
@@ -56,7 +65,8 @@ export function GuelView({
           }}
         >
           <Editable
-            className="w-full h-full"
+            ref={editableRef}
+            className="slate-editor w-full h-full"
             readOnly={!editable}
             renderElement={renderElement}
             renderLeaf={renderLeaf}

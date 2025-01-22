@@ -99,6 +99,25 @@ function App() {
     setMouseType("select");
   }
 
+  function handleDoubleClick(e: React.MouseEvent) {
+    const target = e.target as HTMLElement;
+    const geulElement = findAncestor({
+      start: target,
+      selector: ".geul",
+    });
+    const slateEditorElement = findAncestor({
+      start: target,
+      selector: ".slate-editor",
+    });
+    const geulId =
+      geulElement?.dataset.assetId && parseInt(geulElement.dataset.assetId, 10);
+
+    if (geulId && slateEditorElement) {
+      updateSelection({ newSelection: [geulId] });
+      setMouseType("text");
+    }
+  }
+
   function handleMouseDown(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
     const assetElement = findAncestor({
@@ -115,32 +134,30 @@ function App() {
     // 마우스 타입에 맞는 행동을 if문 아래에 작성
     //
 
+    if (target.tagName === "BUTTON") {
+      if (target.matches(".asset-lt")) {
+        setResizeType("lt");
+      }
+      if (target.matches(".asset-rt")) {
+        setResizeType("rt");
+      }
+      if (target.matches(".asset-lb")) {
+        setResizeType("lb");
+      }
+      if (target.matches(".asset-rb")) {
+        setResizeType("rb");
+      }
+      setMouseTarget("resizeBtn");
+      return;
+    }
+
     // 마우스 타입이 hand일때
     // hand는 기본 타입입니다.
     if (mouseType === "hand") {
-      if (target.tagName === "BUTTON") {
-        if (target.matches(".asset-lt")) {
-          setResizeType("lt");
-        }
-        if (target.matches(".asset-rt")) {
-          setResizeType("rt");
-        }
-        if (target.matches(".asset-lb")) {
-          setResizeType("lb");
-        }
-        if (target.matches(".asset-rb")) {
-          setResizeType("rb");
-        }
-        setMouseTarget("resizeBtn");
-        return;
-      }
-
       // when user select card
       if (assetId) {
         if (!selection.includes(assetId)) {
           updateSelection({ newSelection: [assetId] });
-        } else if (assetElement.matches(".geul") && selection.length === 1) {
-          setMouseType("text");
         }
         setMouseTarget("asset");
         return;
@@ -183,6 +200,19 @@ function App() {
   }
 
   function handleMouseMove(e: React.MouseEvent) {
+    if (mouseTarget === "resizeBtn") {
+      resize({
+        cardId: selection[0],
+        type: resizeType,
+        position: getAbsPosition({
+          pageX: e.pageX,
+          pageY: e.pageY,
+          pageOffset,
+        }),
+      });
+      return;
+    }
+
     if (mouseType === "hand") {
       if (mouseTarget === "asset") {
         if (Object.keys(startPositionMap).length === 0) {
@@ -209,19 +239,6 @@ function App() {
         const dx = e.pageX - mouseStartPosition.x;
         const dy = e.pageY - mouseStartPosition.y;
         setDragOffset({ x: dx, y: dy });
-        return;
-      }
-
-      if (mouseTarget === "resizeBtn") {
-        resize({
-          cardId: selection[0],
-          type: resizeType,
-          position: getAbsPosition({
-            pageX: e.pageX,
-            pageY: e.pageY,
-            pageOffset,
-          }),
-        });
         return;
       }
     }
@@ -301,6 +318,7 @@ function App() {
       />
       <div
         className={`assets relative bg-white dark:bg-zinc-600`}
+        onDoubleClick={handleDoubleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
