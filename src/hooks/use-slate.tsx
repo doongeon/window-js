@@ -1,7 +1,9 @@
 import { useCallback, useState } from "react";
 import { createEditor, Editor } from "slate";
 import { RenderElementProps, RenderLeafProps, withReact } from "slate-react";
-import { CodeElement, DefaultElement, Leaf } from "../components/slate";
+import CodeElement from "../components/slate/code-element";
+import DefaultElement from "../components/slate/default-element";
+import Leaf from "../components/slate/leaf";
 
 export default function useSlate() {
   const [editors, setEditors] = useState<{ [key: number]: Editor }>({});
@@ -22,6 +24,8 @@ export default function useSlate() {
     switch (props.element.type) {
       case "code":
         return <CodeElement {...props} />;
+      case "paragraph":
+        return <DefaultElement {...props} />;
       default:
         return <DefaultElement {...props} />;
     }

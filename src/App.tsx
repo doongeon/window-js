@@ -139,7 +139,7 @@ function App() {
       if (assetId) {
         if (!selection.includes(assetId)) {
           updateSelection({ newSelection: [assetId] });
-        } else if (assetElement.matches(".geul")) {
+        } else if (assetElement.matches(".geul") && selection.length === 1) {
           setMouseType("text");
         }
         setMouseTarget("asset");
@@ -330,14 +330,18 @@ function App() {
           } else if (asset instanceof Geul) {
             return (
               <GuelView
-                mouseType={mouseType}
+                key={asset.id}
                 editor={getEditor({ geulId: asset.id })}
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
-                key={asset.id}
                 geul={asset}
                 zIndex={zStack.indexOf(asset.id)}
                 isSelected={selection.includes(asset.id)}
+                editable={
+                  mouseType === "text" &&
+                  selection.length === 1 &&
+                  selection.includes(asset.id)
+                }
               />
             );
           }

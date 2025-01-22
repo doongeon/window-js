@@ -6,7 +6,6 @@ import {
   Slate,
 } from "slate-react";
 import { Editor } from "slate";
-import { MouseType } from "../types";
 
 export interface GeulProps {
   editor: Editor;
@@ -15,7 +14,7 @@ export interface GeulProps {
   geul: Geul;
   zIndex: number;
   isSelected: boolean;
-  mouseType: MouseType;
+  editable: boolean;
 }
 
 export function GuelView({
@@ -25,6 +24,7 @@ export function GuelView({
   geul,
   zIndex,
   isSelected,
+  editable,
 }: GeulProps) {
   return (
     <>
@@ -50,12 +50,14 @@ export function GuelView({
               (op) => "set_selection" !== op.type
             );
             if (isAstChange) {
+              // save slate into geul object
               geul.updateSlate({ slate });
             }
           }}
         >
           <Editable
             className="w-full h-full"
+            readOnly={!editable}
             renderElement={renderElement}
             renderLeaf={renderLeaf}
           />
