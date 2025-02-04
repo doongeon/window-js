@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { findAncestor, getAbsPosition } from "./utils";
-import SelectSquare from "./components/select-suqare";
+import { useState } from 'react';
+import { findAncestor, getAbsPosition } from './utils';
+import SelectSquare from './components/select-suqare';
 
 import {
   Position,
@@ -9,19 +9,19 @@ import {
   ResizeBtn,
   MouseTarget,
   MouseType,
-} from "./types";
-import Nav from "./components/nav";
-import useSelection from "./hooks/use-selection";
-import useViewState from "./model/use-view-state";
-import { AssetAdjuster } from "./components/asset-adjuster";
-import useAssetMap from "./model/use-asset-map";
-import OptionBar from "./components/option-bar";
+} from './types';
+import Nav from './components/nav';
+import useSelection from './hooks/use-selection';
+import useViewState from './model/use-view-state';
+import { AssetAdjuster } from './components/asset-adjuster';
+import useAssetMap from './model/use-asset-map';
+import OptionBar from './components/option-bar';
 
-import { GuelView } from "./components/geul-view";
-import { Square } from "./types/square";
-import { SquareView } from "./components/square-view";
-import { Geul } from "./types/guel";
-import useSlate from "./hooks/use-slate";
+import { GuelView } from './components/geul-view';
+import { Square } from './types/square';
+import { SquareView } from './components/square-view';
+import { Geul } from './types/guel';
+import useSlate from './hooks/use-slate';
 
 function App() {
   // 모델 변수
@@ -33,6 +33,9 @@ function App() {
     updateColor: updateCardColor,
     updatePosition: updateCardPosition,
     resize,
+    setSlate,
+    setGeulSize,
+    resetPivot,
   } = useAssetMap();
   const {
     zStack,
@@ -44,17 +47,17 @@ function App() {
   } = useViewState();
 
   // 애플리케이션 상태 스테이트
-  const [mouseType, setMouseType] = useState<MouseType>("hand");
+  const [mouseType, setMouseType] = useState<MouseType>('hand');
   const { selection, clearSelection, updateSelection } = useSelection();
 
   // 텍스트 에디터 스테이트
   const { addNewSlate, getEditor, renderElement, renderLeaf } = useSlate();
 
   // 마우스 관련 뷰 스테이트
-  const [mouseStartPosition, setMouseStartPosition] = useState<Position>({
-    x: 0,
-    y: 0,
-  });
+  const [mousePosition, setMousePosition] = useState<{
+    start?: Position;
+    end?: Position;
+  }>({});
   const [mouseTarget, setMouseTarget] = useState<MouseTarget | undefined>();
   const [dragOffset, setDragOffset] = useState<Position>({ x: 0, y: 0 });
   const [resizeType, setResizeType] = useState<ResizeBtn | undefined>();
@@ -86,7 +89,7 @@ function App() {
 
     addOnZStack({ assetId });
     updateSelection({ newSelection: [assetId] });
-    setMouseType("text");
+    setMouseType('text');
   }
 
   function handleDeleteAsset() {
@@ -96,25 +99,25 @@ function App() {
 
   function convertToSelect() {
     clearSelection();
-    setMouseType("select");
+    setMouseType('select');
   }
 
   function handleDoubleClick(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
     const geulElement = findAncestor({
       start: target,
-      selector: ".geul",
+      selector: '.geul',
     });
     const slateEditorElement = findAncestor({
       start: target,
-      selector: ".slate-editor",
+      selector: '.slate-editor',
     });
     const geulId =
       geulElement?.dataset.assetId && parseInt(geulElement.dataset.assetId, 10);
 
     if (geulId && slateEditorElement) {
       updateSelection({ newSelection: [geulId] });
-      setMouseType("text");
+      setMouseType('text');
     }
   }
 
@@ -122,49 +125,49 @@ function App() {
     const target = e.target as HTMLElement;
     const assetElement = findAncestor({
       start: target,
-      selector: ".asset",
+      selector: '.asset',
     });
     const assetId =
       assetElement?.dataset.assetId &&
       parseInt(assetElement.dataset.assetId, 10);
 
-    setMouseStartPosition({ x: e.pageX, y: e.pageY });
+    setMousePosition({ start: { x: e.pageX, y: e.pageY } });
 
     //
     // 마우스 타입에 맞는 행동을 if문 아래에 작성
     //
 
-    if (target.tagName === "BUTTON") {
-      if (target.matches(".asset-lt")) {
-        setResizeType("lt");
+    if (target.tagName === 'BUTTON') {
+      if (target.matches('.asset-lt')) {
+        setResizeType('TL');
       }
-      if (target.matches(".asset-rt")) {
-        setResizeType("rt");
+      if (target.matches('.asset-rt')) {
+        setResizeType('TR');
       }
-      if (target.matches(".asset-lb")) {
-        setResizeType("lb");
+      if (target.matches('.asset-lb')) {
+        setResizeType('BL');
       }
-      if (target.matches(".asset-rb")) {
-        setResizeType("rb");
+      if (target.matches('.asset-rb')) {
+        setResizeType('BR');
       }
-      setMouseTarget("resizeBtn");
+      setMouseTarget('resizeBtn');
       return;
     }
 
     // 마우스 타입이 hand일때
     // hand는 기본 타입입니다.
-    if (mouseType === "hand") {
+    if (mouseType === 'hand') {
       // when user select card
       if (assetId) {
         if (!selection.includes(assetId)) {
           updateSelection({ newSelection: [assetId] });
         }
-        setMouseTarget("asset");
+        setMouseTarget('asset');
         return;
       }
 
       if (!assetId) {
-        setMouseTarget("bg");
+        setMouseTarget('bg');
       }
 
       // 백그라운드를 클릭했을때는 selection을 비운다
@@ -174,8 +177,8 @@ function App() {
     // 마우스 타입이 select일때
     // 네비게이션에서 select를 클릭하면 마우스 타입이 select입니다
     // select 타입은 드래그 해서 여러 카드를 선택할 수 있도록 합니다.
-    if (mouseType === "select") {
-      setMouseTarget("bg");
+    if (mouseType === 'select') {
+      setMouseTarget('bg');
       clearSelection();
       return;
     }
@@ -183,16 +186,16 @@ function App() {
     // 마우스 타입이 text일때
     // 선택된 글 자산을 한번더 클릭하면 마우스 타입이 'text'입니다.
     // text타입일때는 글 수정이 가능합니다.
-    if (mouseType === "text") {
+    if (mouseType === 'text') {
       if (assetId && !selection.includes(assetId)) {
-        setMouseType("hand");
+        setMouseType('hand');
         clearSelection();
         updateSelection({ newSelection: [assetId] });
         return;
       }
 
       if (!assetId) {
-        setMouseType("hand");
+        setMouseType('hand');
         clearSelection();
         return;
       }
@@ -200,21 +203,34 @@ function App() {
   }
 
   function handleMouseMove(e: React.MouseEvent) {
-    if (mouseTarget === "resizeBtn") {
-      resize({
-        cardId: selection[0],
-        type: resizeType,
-        position: getAbsPosition({
-          pageX: e.pageX,
-          pageY: e.pageY,
-          pageOffset,
-        }),
-      });
-      return;
+    if (!mousePosition.start) return;
+
+    setMousePosition((prev) => {
+      return { ...prev, end: { x: e.pageX, y: e.pageY } };
+    });
+
+    if (mouseTarget === 'resizeBtn') {
+      if (selection.length === 1) {
+        resize({
+          assetId: selection[0],
+          type: resizeType,
+          mousePos: getAbsPosition({
+            pageX: e.pageX,
+            pageY: e.pageY,
+            pageOffset,
+          }),
+        });
+        return;
+      } else {
+        /**
+         * TO DO
+         * 1. 여러 에셋이 선택되었을때는 리사이즈 버튼을 통해 전체 비율에 맞추어 스케일만 조정
+         */
+      }
     }
 
-    if (mouseType === "hand") {
-      if (mouseTarget === "asset") {
+    if (mouseType === 'hand') {
+      if (mouseTarget === 'asset') {
         if (Object.keys(startPositionMap).length === 0) {
           setStartPositionMap(() => {
             const newStartPositionMap: { [key: number]: Position } = {};
@@ -228,25 +244,25 @@ function App() {
         updateCardPosition({
           selection: selection,
           startPositionMap,
-          mouseStartPosition: mouseStartPosition,
+          mouseStartPosition: mousePosition.start,
           mousePosition: { x: e.pageX, y: e.pageY },
         });
 
         return;
       }
 
-      if (mouseTarget === "bg") {
-        const dx = e.pageX - mouseStartPosition.x;
-        const dy = e.pageY - mouseStartPosition.y;
+      if (mouseTarget === 'bg') {
+        const dx = e.pageX - mousePosition.start.x;
+        const dy = e.pageY - mousePosition.start.y;
         setDragOffset({ x: dx, y: dy });
         return;
       }
     }
 
-    if (mouseType === "select") {
-      if (mouseTarget === "bg") {
+    if (mouseType === 'select') {
+      if (mouseTarget === 'bg') {
         setSelectSquare({
-          start: mouseStartPosition,
+          start: mousePosition.start,
           end: {
             x: e.pageX,
             y: e.pageY,
@@ -254,8 +270,8 @@ function App() {
         });
 
         const mouseStart = getAbsPosition({
-          pageX: mouseStartPosition.x,
-          pageY: mouseStartPosition.y,
+          pageX: mousePosition.start.x,
+          pageY: mousePosition.start.y,
           pageOffset,
         });
 
@@ -286,8 +302,8 @@ function App() {
   }
 
   function handleMouseUp() {
-    if (mouseType === "hand") {
-      if (mouseTarget === "bg") {
+    if (mouseType === 'hand') {
+      if (mouseTarget === 'bg') {
         updatePageOffset(dragOffset);
       }
     }
@@ -295,12 +311,13 @@ function App() {
     // 마우스 관련 값 초기화
     setDragOffset({ x: 0, y: 0 });
     setStartPositionMap({});
-    if (mouseType !== "text") {
-      setMouseType("hand");
+    if (mouseType !== 'text') {
+      setMouseType('hand');
     }
+    resetPivot(); // 리사이즈시 사용된 피벗 초기화
     setMouseTarget(undefined);
-    setMouseStartPosition({ x: 0, y: 0 });
     setSelectSquare(undefined);
+    setMousePosition({});
   }
 
   return (
@@ -317,7 +334,7 @@ function App() {
         moveToBottomOfZStack={moveToBottomOfZStack}
       />
       <div
-        className={`assets relative bg-white dark:bg-zinc-600`}
+        className={`assets relative bg-white`}
         onDoubleClick={handleDoubleClick}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -326,8 +343,8 @@ function App() {
           transform: `translate(${pageOffset.x + dragOffset.x}px, ${
             pageOffset.y + dragOffset.y
           }px)`,
-          width: WALL_WIDTH + "px",
-          height: WALL_HEIGHT + "px",
+          width: WALL_WIDTH + 'px',
+          height: WALL_HEIGHT + 'px',
           left: -WALL_WIDTH / 2,
           top: -WALL_HEIGHT / 2,
         }}
@@ -339,10 +356,6 @@ function App() {
                 key={asset.id}
                 square={asset}
                 zIndex={zStack.indexOf(asset.id)}
-                isSelected={selection.includes(asset.id)}
-                isSelectedOnly={
-                  selection.length === 1 && selection.includes(asset.id)
-                }
               />
             );
           } else if (asset instanceof Geul) {
@@ -353,10 +366,12 @@ function App() {
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
                 geul={asset}
+                setSlate={setSlate}
+                setGeulSize={setGeulSize}
                 zIndex={zStack.indexOf(asset.id)}
                 isSelected={selection.includes(asset.id)}
                 editable={
-                  mouseType === "text" &&
+                  mouseType === 'text' &&
                   selection.length === 1 &&
                   selection.includes(asset.id)
                 }
@@ -369,8 +384,8 @@ function App() {
           end={selectSquare?.end}
           pageOffset={pageOffset}
         />
-        {selection.length === 1 && (
-          <AssetAdjuster asset={assets[selection[0]]} />
+        {selection.length > 0 && (
+          <AssetAdjuster assets={assets} selection={selection} />
         )}
       </div>
       <OptionBar

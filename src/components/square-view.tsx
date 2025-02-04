@@ -1,20 +1,19 @@
-import { Square } from "../types/square";
+import { Position } from '../types';
+import { Square } from '../types/square';
 
 export interface SquareProps {
   square: Square;
   zIndex: number;
-  isSelected: boolean;
-  isSelectedOnly: boolean;
+  dragOffset?: Position;
 }
 
-export function SquareView({ square, zIndex, isSelected }: SquareProps) {
+export function SquareView({ square, zIndex }: SquareProps) {
   return (
     <div
-      className={`asset square border border-slate-900 dark:border-white container text-black dark:text-white outline-none
-        ${isSelected ? "ring-4" : ""} 
+      className={`asset square border-4 border-gray-600 container rounded-lg text-black outline-none
       `}
       style={{
-        position: "absolute",
+        position: 'absolute',
         width: square.size.width,
         height: square.size.height,
         left: square.position.x,

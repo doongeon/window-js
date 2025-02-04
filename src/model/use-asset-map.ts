@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Square } from "../types/square";
-import { Position, ResizeBtn } from "../types";
-import { Geul } from "../types/guel";
+import { useState } from 'react';
+import { Square } from '../types/square';
+import { Position, ResizeBtn, Size } from '../types';
+import { Geul } from '../types/guel';
+import { Descendant } from 'slate';
 
 export default function useAssetMap() {
   /**
@@ -36,6 +37,54 @@ export default function useAssetMap() {
     return newId;
   }
 
+  function setGeulSize({
+    geulId,
+    viewSize,
+  }: {
+    geulId: number;
+    viewSize: Size;
+  }) {
+    if (!assets[geulId]) return;
+    if (!(assets[geulId] instanceof Geul)) return;
+
+    setAssetMap((prev) => {
+      const newAssetMap = { ...prev };
+      if (newAssetMap[geulId] instanceof Geul) {
+        newAssetMap[geulId] = new Geul({
+          id: geulId,
+          position: newAssetMap[geulId].position,
+          size: newAssetMap[geulId].calcSize(viewSize),
+          scale: newAssetMap[geulId].getScale(),
+          slate: newAssetMap[geulId].slate,
+        });
+      }
+      return newAssetMap;
+    });
+  }
+
+  function setSlate({
+    geulId,
+    slate,
+  }: {
+    geulId: number;
+    slate: Descendant[];
+  }) {
+    if (!assets[geulId]) return;
+    if (!(assets[geulId] instanceof Geul)) return;
+
+    setAssetMap((prev) => {
+      const newAssetMap = { ...prev };
+      newAssetMap[geulId] = new Geul({
+        id: geulId,
+        position: newAssetMap[geulId].position,
+        size: newAssetMap[geulId].size,
+        scale: newAssetMap[geulId].getScale(),
+        slate,
+      });
+      return newAssetMap;
+    });
+  }
+
   function deleteAsset(assetIds: number[]) {
     if (assetIds.length < 1) return;
     setAssetMap((prev) => {
@@ -61,32 +110,35 @@ export default function useAssetMap() {
   }
 
   function resize({
-    cardId,
+    assetId,
     type,
-    position,
+    mousePos,
   }: {
-    cardId: number;
+    assetId: number;
     type?: ResizeBtn;
-    position: Position;
+    mousePos: Position;
   }) {
+    if (!assets[assetId]) return;
+
     setAssetMap((prev) => {
       const newAssets = { ...prev };
-      switch (type) {
-        case "lt":
-          newAssets[cardId].setLT(position);
-          break;
-        case "rt":
-          newAssets[cardId].setRT(position);
-          break;
-        case "lb":
-          newAssets[cardId].setLB(position);
-          break;
-        case "rb":
-          newAssets[cardId].setRB(position);
-          break;
-        default:
+      if (newAssets[assetId] instanceof Geul) {
+        newAssets[assetId] = newAssets[assetId].rescale({ type, mousePos });
+      } else {
+        newAssets[assetId] = newAssets[assetId].resize({ type, mousePos });
       }
       return newAssets;
+    });
+  }
+
+  function resetPivot() {
+    setAssetMap((prev) => {
+      const newAssetMap = { ...prev };
+      Object.keys(newAssetMap).forEach((assetId) => {
+        newAssetMap[parseInt(assetId)] =
+          newAssetMap[parseInt(assetId)].resetPivot();
+      });
+      return newAssetMap;
     });
   }
 
@@ -120,7 +172,10 @@ export default function useAssetMap() {
     addNewGeul,
     deleteAsset,
     updateColor,
+    setSlate,
+    setGeulSize,
     updatePosition,
     resize,
+    resetPivot,
   };
 }

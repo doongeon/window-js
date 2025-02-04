@@ -1,61 +1,34 @@
-import { Position } from ".";
+import { Position, Size } from '.';
 
 export class Asset {
-  public id: number;
+  public readonly id: number;
   public position: Position;
-  public size: { width: number; height: number };
+  pivot?: Position;
+  public size: Size;
+  private scale: number;
+  private viewSize: Size;
 
   // 유저가 선택한 스퀘어는 selection에서 관리합니다.
   constructor({
     id,
     position,
+    pivot,
     size = { width: 100, height: 40 },
+    scale = 1,
   }: {
     id: number;
     position: Position;
-    size?: { width: number; height: number };
+    pivot?: Position;
+    size: { width: number; height: number };
+    scale?: number;
     color?: string;
   }) {
     this.id = id;
     this.position = position;
     this.size = size;
-  }
-
-  setLT({ x, y }: Position) {
-    if (x > this.position.x + this.size.width) return;
-    if (y > this.position.y + this.size.height) return;
-
-    this.size.width = this.position.x + this.size.width - x;
-    this.size.height = this.position.y + this.size.height - y;
-    this.position = { x, y };
-  }
-
-  setRT({ x, y }: Position) {
-    if (x < this.position.x) return;
-    if (y > this.position.y + this.size.height) return;
-
-    this.size.width = x - this.position.x;
-    this.size.height = this.position.y + this.size.height - y;
-
-    this.position = { x: this.position.x, y };
-  }
-
-  setLB({ x, y }: Position) {
-    if (x > this.position.x + this.size.width) return;
-    if (y < this.position.y) return;
-
-    this.size.width = this.position.x + this.size.width - x;
-    this.size.height = y - this.position.y;
-
-    this.position = { x, y: this.position.y };
-  }
-
-  setRB({ x, y }: Position) {
-    if (x < this.position.x) return;
-    if (y < this.position.y) return;
-
-    this.size.width = x - this.position.x;
-    this.size.height = y - this.position.y;
+    this.scale = scale;
+    this.pivot = pivot;
+    this.viewSize = { width: size.width * scale, height: size.height * scale };
   }
 
   getCenter(): Position {
@@ -90,5 +63,59 @@ export class Asset {
       this.position.x + this.size.width <= positionRB.x &&
       this.position.y + this.size.height <= positionRB.y
     );
+  }
+
+  calcScale(viewSize: Size) {
+    return Math.max(
+      viewSize.width / this.size.width,
+      viewSize.height / this.size.height
+    );
+  }
+
+  calcSize(viewSize: Size) {
+    return {
+      width: Math.floor((viewSize.width / this.scale) * 100) / 100,
+      height: Math.floor((viewSize.height / this.scale) * 100) / 100,
+    } as Size;
+  }
+
+  getTR() {
+    return {
+      x: this.position.x + this.getViewWidth(),
+      y: this.position.y,
+    } as Position;
+  }
+
+  getTL() {
+    return {
+      x: this.position.x,
+      y: this.position.y,
+    } as Position;
+  }
+
+  getBR() {
+    return {
+      x: this.position.x + this.getViewWidth(),
+      y: this.position.y + this.getViewHeight(),
+    } as Position;
+  }
+
+  getBL() {
+    return {
+      x: this.position.x,
+      y: this.position.y + this.getViewHeight(),
+    } as Position;
+  }
+
+  getScale() {
+    return this.scale;
+  }
+
+  getViewWidth() {
+    return this.viewSize.width;
+  }
+
+  getViewHeight() {
+    return this.viewSize.height;
   }
 }
