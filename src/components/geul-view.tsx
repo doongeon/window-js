@@ -1,27 +1,27 @@
 import { Geul } from '../types/guel';
 import {
   Editable,
+  ReactEditor,
   RenderElementProps,
   RenderLeafProps,
   Slate,
 } from 'slate-react';
-import { Descendant, Editor } from 'slate';
+import { Descendant, Editor, Transforms } from 'slate';
 import { useEffect, useRef } from 'react';
 import { Size } from '../types';
 
 export interface GuelViewProps {
   editor: Editor;
-  renderElement: (props: RenderElementProps) => JSX.Element;
-  renderLeaf: (props: RenderLeafProps) => JSX.Element;
   geul: Geul;
   zIndex: number;
   isSelected: boolean;
   editable: boolean;
+
   setSlate: ({
-    geulId,
+    assetId,
     slate,
   }: {
-    geulId: number;
+    assetId: number;
     slate: Descendant[];
   }) => void;
   setGeulSize: ({
@@ -31,6 +31,8 @@ export interface GuelViewProps {
     geulId: number;
     viewSize: Size;
   }) => void;
+  renderElement: (props: RenderElementProps) => JSX.Element;
+  renderLeaf: (props: RenderLeafProps) => JSX.Element;
 }
 
 export function GuelView({
@@ -45,6 +47,14 @@ export function GuelView({
   setGeulSize,
 }: GuelViewProps) {
   const editableRef = useRef<HTMLDivElement>(null); // Ref 생성
+
+  useEffect(() => {
+    if (editable && editor) {
+      const endPoint = Editor.end(editor, []);
+      ReactEditor.focus(editor);
+      Transforms.select(editor, endPoint);
+    }
+  }, [editable]);
 
   useEffect(() => {
     setGeulSize({
@@ -63,8 +73,8 @@ export function GuelView({
         position: 'absolute',
         left: geul.position.x,
         top: geul.position.y,
-        width: `${geul.getViewWidth()}px`,
-        height: `${geul.getViewHeight()}px`,
+        width: `${geul.viewSize.width}px`,
+        height: `${geul.viewSize.height}px`,
         backgroundColor: 'transparent',
         zIndex: zIndex,
         transformOrigin: 'left top',
@@ -82,7 +92,7 @@ export function GuelView({
           if (isAstChange) {
             // save slate into geul object
             setSlate({
-              geulId: geul.id,
+              assetId: geul.id,
               slate,
             });
           }
@@ -92,7 +102,7 @@ export function GuelView({
           ref={editableRef}
           className="slate-editor px-2 outline-none w-max"
           style={{
-            transform: `scale(${geul.getScale()})`,
+            transform: `scale(${geul.scale})`,
             transformOrigin: 'top left',
           }}
           readOnly={!editable}

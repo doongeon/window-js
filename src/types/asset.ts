@@ -1,12 +1,27 @@
 import { Position, Size } from '.';
 
+export interface Resizable {
+  resize: (arg: any) => Resizable;
+  resetPivot: () => Resizable;
+}
+
+export interface Rescalable {
+  rescale: (arg: any) => Rescalable;
+  resetPivot: () => Rescalable;
+}
+
+export interface Movable {
+  position: Position;
+  setPosition: ({ newPos }: { newPos: Position }) => Movable;
+}
+
 export class Asset {
-  public readonly id: number;
-  public position: Position;
+  readonly id: number;
+  position: Position;
   pivot?: Position;
-  public size: Size;
-  private scale: number;
-  private viewSize: Size;
+  size: Size;
+  scale: number;
+  viewSize: Size;
 
   // 유저가 선택한 스퀘어는 selection에서 관리합니다.
   constructor({
@@ -81,7 +96,7 @@ export class Asset {
 
   getTR() {
     return {
-      x: this.position.x + this.getViewWidth(),
+      x: this.position.x + this.viewSize.width,
       y: this.position.y,
     } as Position;
   }
@@ -95,27 +110,15 @@ export class Asset {
 
   getBR() {
     return {
-      x: this.position.x + this.getViewWidth(),
-      y: this.position.y + this.getViewHeight(),
+      x: this.position.x + this.viewSize.width,
+      y: this.position.y + this.viewSize.height,
     } as Position;
   }
 
   getBL() {
     return {
       x: this.position.x,
-      y: this.position.y + this.getViewHeight(),
+      y: this.position.y + this.viewSize.height,
     } as Position;
-  }
-
-  getScale() {
-    return this.scale;
-  }
-
-  getViewWidth() {
-    return this.viewSize.width;
-  }
-
-  getViewHeight() {
-    return this.viewSize.height;
   }
 }

@@ -25,6 +25,25 @@ export default function useAssetMap() {
     return newId;
   }
 
+  function addSlate({ assetId }: { assetId: number }) {
+    setAssetMap((prev) => {
+      const newAssets = { ...prev };
+      if (newAssets[assetId] instanceof Square) {
+        newAssets[assetId] = new Square({
+          ...newAssets[assetId],
+          slate: [
+            {
+              type: 'paragraph',
+              textAlign: 'center',
+              children: [{ text: '' }],
+            },
+          ],
+        });
+      }
+      return newAssets;
+    });
+  }
+
   function addNewGeul({ position }: { position: Position }) {
     const newId = id + 1;
     setId(newId);
@@ -51,11 +70,8 @@ export default function useAssetMap() {
       const newAssetMap = { ...prev };
       if (newAssetMap[geulId] instanceof Geul) {
         newAssetMap[geulId] = new Geul({
-          id: geulId,
-          position: newAssetMap[geulId].position,
+          ...newAssetMap[geulId],
           size: newAssetMap[geulId].calcSize(viewSize),
-          scale: newAssetMap[geulId].getScale(),
-          slate: newAssetMap[geulId].slate,
         });
       }
       return newAssetMap;
@@ -63,24 +79,17 @@ export default function useAssetMap() {
   }
 
   function setSlate({
-    geulId,
+    assetId,
     slate,
   }: {
-    geulId: number;
+    assetId: number;
     slate: Descendant[];
   }) {
-    if (!assets[geulId]) return;
-    if (!(assets[geulId] instanceof Geul)) return;
+    if (!assets[assetId]) return;
 
     setAssetMap((prev) => {
       const newAssetMap = { ...prev };
-      newAssetMap[geulId] = new Geul({
-        id: geulId,
-        position: newAssetMap[geulId].position,
-        size: newAssetMap[geulId].size,
-        scale: newAssetMap[geulId].getScale(),
-        slate,
-      });
+      newAssetMap[assetId] = newAssetMap[assetId].setSlate({ slate });
       return newAssetMap;
     });
   }
@@ -100,9 +109,11 @@ export default function useAssetMap() {
     setAssetMap((prev) => {
       const newAssets = { ...prev };
       Object.keys(colorMap).forEach((key) => {
-        const cardId = parseInt(key, 10);
-        if (newAssets[cardId] instanceof Square) {
-          newAssets[cardId].color = colorMap[cardId];
+        const assetId = parseInt(key);
+        if (newAssets[assetId] instanceof Square) {
+          newAssets[assetId] = newAssets[assetId].setColor({
+            color: colorMap[assetId],
+          });
         }
       });
       return newAssets;
@@ -134,9 +145,9 @@ export default function useAssetMap() {
   function resetPivot() {
     setAssetMap((prev) => {
       const newAssetMap = { ...prev };
-      Object.keys(newAssetMap).forEach((assetId) => {
-        newAssetMap[parseInt(assetId)] =
-          newAssetMap[parseInt(assetId)].resetPivot();
+      Object.keys(newAssetMap).forEach((key) => {
+        const assetId = parseInt(key);
+        newAssetMap[assetId] = newAssetMap[assetId].resetPivot();
       });
       return newAssetMap;
     });
@@ -155,12 +166,20 @@ export default function useAssetMap() {
   }) {
     setAssetMap((prev) => {
       const newAssets = { ...prev };
-      selection.forEach((cardId) => {
-        if (!startPositionMap[cardId]) return;
-        newAssets[cardId].position.x =
-          startPositionMap[cardId].x + mousePosition.x - mouseStartPosition.x;
-        newAssets[cardId].position.y =
-          startPositionMap[cardId].y + mousePosition.y - mouseStartPosition.y;
+      selection.forEach((assetId) => {
+        if (!startPositionMap[assetId]) return;
+        newAssets[assetId] = newAssets[assetId].setPosition({
+          newPos: {
+            x:
+              startPositionMap[assetId].x +
+              mousePosition.x -
+              mouseStartPosition.x,
+            y:
+              startPositionMap[assetId].y +
+              mousePosition.y -
+              mouseStartPosition.y,
+          },
+        });
       });
       return newAssets;
     });
@@ -177,5 +196,6 @@ export default function useAssetMap() {
     updatePosition,
     resize,
     resetPivot,
+    addSlate,
   };
 }

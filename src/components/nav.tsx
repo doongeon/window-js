@@ -1,8 +1,8 @@
-import { ColorResult } from "react-color";
-import ColorBtn from "./color-btn";
-import { useNavigate } from "react-router";
-import { Geul } from "../types/guel";
-import { Square } from "../types/square";
+import { ColorResult } from 'react-color';
+import ColorBtn from './color-btn';
+import { useNavigate } from 'react-router';
+import { Geul } from '../types/guel';
+import { Square } from '../types/square';
 
 export default function Nav({
   assets,
@@ -49,7 +49,7 @@ export default function Nav({
       <button onClick={handleAddSquare}>카드 추가</button>
       <button onClick={handleAddGeul}>텍스트 추가</button>
       <button
-        className={`${selection.length > 0 ? "opacity-100" : "opacity-40"}`}
+        className={`${selection.length > 0 ? 'opacity-100' : 'opacity-40'}`}
         disabled={selection.length === 0}
         onClick={handleDeleteAsset}
       >
@@ -64,7 +64,7 @@ export default function Nav({
         handleColorChange={handleColorChange}
       />
       <button
-        className={`${selection.length > 0 ? "opacity-100" : "opacity-40"}`}
+        className={`${selection.length > 0 ? 'opacity-100' : 'opacity-40'}`}
         disabled={selection.length === 0}
         onClick={() => {
           moveToTopOfZStack({ assetIds: selection });
@@ -73,7 +73,7 @@ export default function Nav({
         맨 위로
       </button>
       <button
-        className={`${selection.length > 0 ? "opacity-100" : "opacity-40"}`}
+        className={`${selection.length > 0 ? 'opacity-100' : 'opacity-40'}`}
         disabled={selection.length === 0}
         onClick={() => {
           moveToBottomOfZStack({ assetIds: selection });
@@ -82,12 +82,13 @@ export default function Nav({
         맨 뒤로
       </button>
       <button
+        disabled={true}
         onClick={() => {
-          if (process.env.NODE_ENV === "development") {
-            navigate("/oauth2/callback?code=123");
+          if (process.env.NODE_ENV === 'development') {
+            navigate('/oauth2/callback?code=123');
           } else {
             window.location.replace(
-              "https://accounts.google.com/o/oauth2/auth/oauthchooseaccount?client_id=193814143627-iherkj2filktbt1566ts6lmhse67a6ol.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fwindow-js.netlify.app%2Foauth2%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&access_type=offline&service=lso&o2v=1&ddm=1&flowName=GeneralOAuthFlow"
+              'https://accounts.google.com/o/oauth2/auth/oauthchooseaccount?client_id=193814143627-iherkj2filktbt1566ts6lmhse67a6ol.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fwindow-js.netlify.app%2Foauth2%2Fcallback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile%20https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.email&access_type=offline&service=lso&o2v=1&ddm=1&flowName=GeneralOAuthFlow'
             );
           }
         }}

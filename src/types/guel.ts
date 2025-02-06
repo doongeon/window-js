@@ -1,8 +1,8 @@
 import { Descendant } from 'slate';
 import { Position, ResizeBtn } from '.';
-import { Asset } from './asset';
+import { Asset, Movable, Rescalable } from './asset';
 
-export class Geul extends Asset {
+export class Geul extends Asset implements Movable, Rescalable {
   public slate: Descendant[];
 
   constructor({
@@ -28,6 +28,13 @@ export class Geul extends Asset {
       scale,
     });
     this.slate = slate;
+  }
+
+  setPosition({ newPos }: { newPos: Position }) {
+    return new Geul({
+      ...this,
+      position: newPos,
+    });
   }
 
   rescale({ type, mousePos }: { type?: ResizeBtn; mousePos: Position }) {
@@ -56,18 +63,18 @@ export class Geul extends Asset {
       // 마우스가 피벗 기준 1 사분면에 있을떄
       position = {
         x: this.pivot.x,
-        y: this.pivot.y - this.size.height * this.getScale(),
+        y: this.pivot.y - this.size.height * this.scale,
       };
     } else if (mousePos.x < this.pivot.x && mousePos.y < this.pivot.y) {
       // 마우스가 피벗 기준 2 사분면에 있을떄
       position = {
-        x: this.pivot.x - this.size.width * this.getScale(),
-        y: this.pivot.y - this.size.height * this.getScale(),
+        x: this.pivot.x - this.size.width * this.scale,
+        y: this.pivot.y - this.size.height * this.scale,
       };
     } else if (mousePos.x < this.pivot.x && mousePos.y > this.pivot.y) {
       // 마우스가 피벗 기준 3 사분면에 있을떄
       position = {
-        x: this.pivot.x - this.size.width * this.getScale(),
+        x: this.pivot.x - this.size.width * this.scale,
         y: this.pivot.y,
       };
     } else {
@@ -93,15 +100,15 @@ export class Geul extends Asset {
   resetPivot() {
     // 리사이즈가 끝난 후 호출해 줘야 다음 리사이즈가 정상적으로 동작함
     return new Geul({
-      id: this.id,
-      position: this.position,
-      size: this.size,
-      scale: this.getScale(),
-      slate: this.slate,
+      ...this,
+      pivot: undefined,
     });
   }
 
-  updateFromSlate({ slate }: { slate: Descendant[] }) {
-    this.slate = slate;
+  setSlate({ slate }: { slate: Descendant[] }) {
+    return new Geul({
+      ...this,
+      slate,
+    });
   }
 }

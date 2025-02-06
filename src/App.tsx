@@ -36,6 +36,7 @@ function App() {
     setSlate,
     setGeulSize,
     resetPivot,
+    addSlate,
   } = useAssetMap();
   const {
     zStack,
@@ -85,7 +86,7 @@ function App() {
     const assetId = addNewGeul({
       position: getAbsPosition({ pageX: 100, pageY: 100, pageOffset }),
     });
-    addNewSlate({ geulId: assetId });
+    addNewSlate({ assetId });
 
     addOnZStack({ assetId });
     updateSelection({ newSelection: [assetId] });
@@ -104,20 +105,28 @@ function App() {
 
   function handleDoubleClick(e: React.MouseEvent) {
     const target = e.target as HTMLElement;
-    const geulElement = findAncestor({
+    const assetElement = findAncestor({
       start: target,
-      selector: '.geul',
+      selector: '.asset',
     });
-    const slateEditorElement = findAncestor({
-      start: target,
-      selector: '.slate-editor',
-    });
-    const geulId =
-      geulElement?.dataset.assetId && parseInt(geulElement.dataset.assetId, 10);
+    const assetId =
+      assetElement?.dataset.assetId && parseInt(assetElement.dataset.assetId);
 
-    if (geulId && slateEditorElement) {
-      updateSelection({ newSelection: [geulId] });
+    if (assetId && assets[assetId] instanceof Geul) {
+      updateSelection({ newSelection: [assetId] });
       setMouseType('text');
+      return;
+    }
+
+    // 더블클릭시 카드 내부 스레이트 작성
+    if (assetId && assets[assetId] instanceof Square) {
+      if (!assets[assetId].slate) {
+        addSlate({ assetId });
+        addNewSlate({ assetId });
+      }
+      setMouseType('text');
+      updateSelection({ newSelection: [assetId] });
+      return;
     }
   }
 
@@ -168,10 +177,11 @@ function App() {
 
       if (!assetId) {
         setMouseTarget('bg');
-      }
 
-      // 백그라운드를 클릭했을때는 selection을 비운다
-      clearSelection();
+        // 백그라운드를 클릭했을때는 selection을 비운다
+        clearSelection();
+        return;
+      }
     }
 
     // 마우스 타입이 select일때
@@ -187,12 +197,12 @@ function App() {
     // 선택된 글 자산을 한번더 클릭하면 마우스 타입이 'text'입니다.
     // text타입일때는 글 수정이 가능합니다.
     if (mouseType === 'text') {
-      if (assetId && !selection.includes(assetId)) {
-        setMouseType('hand');
-        clearSelection();
-        updateSelection({ newSelection: [assetId] });
-        return;
-      }
+      // if (assetId && !selection.includes(assetId)) {
+      //   setMouseType('hand');
+      //   clearSelection();
+      //   updateSelection({ newSelection: [assetId] });
+      //   return;
+      // }
 
       if (!assetId) {
         setMouseType('hand');
@@ -310,13 +320,13 @@ function App() {
 
     // 마우스 관련 값 초기화
     setDragOffset({ x: 0, y: 0 });
-    setStartPositionMap({});
     if (mouseType !== 'text') {
       setMouseType('hand');
     }
     resetPivot(); // 리사이즈시 사용된 피벗 초기화
     setMouseTarget(undefined);
     setSelectSquare(undefined);
+    setStartPositionMap({});
     setMousePosition({});
   }
 
@@ -356,13 +366,18 @@ function App() {
                 key={asset.id}
                 square={asset}
                 zIndex={zStack.indexOf(asset.id)}
+                editor={getEditor({ assetId: asset.id })}
+                editable={mouseType === 'text' && selection.includes(asset.id)}
+                setSlate={setSlate}
+                renderElement={renderElement}
+                renderLeaf={renderLeaf}
               />
             );
           } else if (asset instanceof Geul) {
             return (
               <GuelView
                 key={asset.id}
-                editor={getEditor({ geulId: asset.id })}
+                editor={getEditor({ assetId: asset.id })}
                 renderElement={renderElement}
                 renderLeaf={renderLeaf}
                 geul={asset}
@@ -391,7 +406,7 @@ function App() {
       <OptionBar
         mouseType={mouseType}
         selection={selection}
-        editor={getEditor({ geulId: selection[0] })}
+        editor={getEditor({ assetId: selection[0] })}
       />
     </>
   );

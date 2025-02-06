@@ -15,8 +15,8 @@ export function AssetAdjuster({ assets, selection }: AssetAdjusterProps) {
     for (const assetId of selection) {
       const p1 = assets[assetId].position;
       const p2 = {
-        x: p1.x + assets[assetId].getViewWidth(),
-        y: p1.y + assets[assetId].getViewHeight(),
+        x: p1.x + assets[assetId].viewSize.width,
+        y: p1.y + assets[assetId].viewSize.height,
       };
       minX = Math.min(minX, p1.x, p2.x);
       minY = Math.min(minY, p1.y, p2.y);
